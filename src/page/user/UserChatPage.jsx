@@ -723,8 +723,7 @@ export default function ChatInterface() {
   const inputRef = useRef(null);
   const navigation = useNavigate();
   const route = useParams();
-  //   chats
-  const [chatHistory, setChatHistory] = useState([]);
+  const chatWs = useRef(null);
 
   const messagesEndRef = useRef(null);
 
@@ -733,18 +732,34 @@ export default function ChatInterface() {
     console.log("message recived");
   };
   const token = localStorage.getItem("token");
-  const urlFoSocket = "/ws/api/v1/chat/";
   useEffect(() => {
     console.log(token);
-
-    if (token) {
-      wsManager.connect({ route: urlFoSocket, token });
-      wsManager.addListener(handleMessage);
-    }
-    return () => {
-      wsManager.removeListener(handleMessage);
+    chatWs.current = new WebSocket(
+      `ws://192.168.10.124:3100/ws/api/v1/chat/?Authorization=Bearer ${token}`
+    );
+    chatWs.current.onopen = () => {
+      console.log("chat WebSocket connected");
     };
-  }, []);
+
+    chatWs.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      handleMessage(data);
+    };
+
+    chatWs.current.onerror = (err) => {
+      console.error("chat WebSocket error:", err);
+    };
+
+    chatWs.current.onclose = () => {
+      console.log("chat WebSocket closed");
+    };
+
+    return () => {
+      if (chatWs.current) {
+        chatWs.current.close();
+      }
+    };
+  }, [token]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

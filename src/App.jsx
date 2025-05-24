@@ -24,18 +24,11 @@ import UserNotifications from "./page/user/UserNotifications";
 import wsManager from "./socket/socket";
 
 function App() {
-  const [notifications, setNotifications] = useState([]);
-  const notifyWs = useRef(null);
   const chatWs = useRef(null);
   const token = localStorage.getItem("token");
 
   const handleMessage = (m) => {
     console.log("Chat message received:", m);
-  };
-
-  const handleNotifications = (notify) => {
-    console.log("Notification received:", notify);
-    setNotifications((prev) => [...prev, notify]);
   };
 
   useEffect(() => {
@@ -46,30 +39,10 @@ function App() {
     wsManager.connect({ route: chatRoute, token });
     // wsManager.addListener(chatRoute, handleMessage);
 
-    // Initialize notification WebSocket
-    notifyWs.current = new WebSocket(
-      `ws://192.168.10.124:3100/ws/api/v1/notification/?Authorization=Bearer ${token}`
-    );
     chatWs.current = new WebSocket(
       `ws://192.168.10.124:3100/ws/api/v1/chat/?Authorization=Bearer ${token}`
     );
 
-    notifyWs.current.onopen = () => {
-      console.log("Notification WebSocket connected");
-    };
-
-    notifyWs.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      handleNotifications(data);
-    };
-
-    notifyWs.current.onerror = (err) => {
-      console.error("Notification WebSocket error:", err);
-    };
-
-    notifyWs.current.onclose = () => {
-      console.log("Notification WebSocket closed");
-    };
     // next one
     chatWs.current.onopen = () => {
       console.log("chat WebSocket connected");
@@ -91,9 +64,6 @@ function App() {
     return () => {
       if (chatWs.current) {
         chatWs.current.close();
-      }
-      if (notifyWs.current) {
-        notifyWs.current.close();
       }
     };
   }, [token]);

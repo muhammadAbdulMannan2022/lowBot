@@ -13,7 +13,6 @@ import Sidebar from "../../component/admin/Sidebar";
 import ChatSideBaIcon from "../../assets/chatbar.svg";
 import axiosInstance from "../../component/axiosInstance";
 import { Link, useParams } from "react-router-dom";
-import wsManager from "../../socket/socket";
 
 export default function SupportChat() {
   const [activeFilter, setActiveFilter] = useState("critical");
@@ -25,11 +24,16 @@ export default function SupportChat() {
   const messagesEndRef = useRef(null); // Ref to scroll to the latest message
   const route = useParams();
   const [chatId, setChatId] = useState(null);
+  const [isRequest, setIsRequest] = useState(true);
+
+  const handleRToggle = () => {
+    setIsRequest(!isRequest);
+  };
   // Fetch all chats for the mentor
   const fetchChats = async () => {
     try {
       const response = await axiosInstance.get(
-        "/realtime/chats/list_user_chats/"
+        "/chats/help-desk/tickets/list/"
       ); // Adjust endpoint as needed
       setChats(response.data);
     } catch (error) {
@@ -181,58 +185,84 @@ export default function SupportChat() {
               }`}
             >
               <div className="p-4 border-b">
-                <div className="relative border rounded-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Search name"
-                    className="pl-9 bg-white w-full"
-                    aria-label="Search users"
-                  />
-                </div>
-                <div className="mt-4">
-                  <p className="text-sm mb-2">Filters:</p>
-                  <Tabs
-                    defaultValue="critical"
-                    value={activeFilter}
-                    onValueChange={setActiveFilter}
+                {/* toggle old and new */}
+                <div className="flex items-center justify-center rounded-lg overflow-hidden mb-4">
+                  <button
+                    onClick={handleRToggle}
+                    className={`px-4 py-2 text-sm font-medium transition-colors duration-200 rounded ${
+                      isRequest
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
                   >
-                    <TabsList className="grid grid-cols-3 w-full">
-                      <TabsTrigger
-                        value="critical"
-                        className={
-                          activeFilter.toLowerCase() === "critical"
-                            ? "bg-blue-500 text-white"
-                            : ""
-                        }
-                        aria-label="Filter by critical priority"
-                      >
-                        Critical
-                      </TabsTrigger>
-                      <TabsTrigger
-                        className={
-                          activeFilter.toLowerCase() == "medium"
-                            ? "bg-blue-500 text-white"
-                            : ""
-                        }
-                        value="medium"
-                        aria-label="Filter by medium priority"
-                      >
-                        Medium
-                      </TabsTrigger>
-                      <TabsTrigger
-                        className={
-                          activeFilter.toLowerCase() === "general"
-                            ? "bg-blue-500 text-white"
-                            : ""
-                        }
-                        value="general"
-                        aria-label="Filter by general priority"
-                      >
-                        General
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
+                    Request
+                  </button>
+                  <button
+                    onClick={handleRToggle}
+                    className={`px-4 py-2 text-sm font-medium transition-colors duration-200 rounded ${
+                      !isRequest
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    Running
+                  </button>
                 </div>
+                <div className="flex gap-4">
+                  <div className="relative border rounded-md w-full">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Search name"
+                      className="pl-9 bg-white w-full"
+                      aria-label="Search users"
+                    />
+                  </div>
+                </div>
+                {isRequest && (
+                  <div className="mt-4">
+                    <Tabs
+                      defaultValue="critical"
+                      value={activeFilter}
+                      onValueChange={setActiveFilter}
+                    >
+                      <TabsList className="grid grid-cols-3 w-full">
+                        <TabsTrigger
+                          value="critical"
+                          className={
+                            activeFilter.toLowerCase() === "critical"
+                              ? "bg-blue-500 text-white"
+                              : ""
+                          }
+                          aria-label="Filter by critical priority"
+                        >
+                          Critical
+                        </TabsTrigger>
+                        <TabsTrigger
+                          className={
+                            activeFilter.toLowerCase() == "medium"
+                              ? "bg-blue-500 text-white"
+                              : ""
+                          }
+                          value="medium"
+                          aria-label="Filter by medium priority"
+                        >
+                          Medium
+                        </TabsTrigger>
+                        <TabsTrigger
+                          className={
+                            activeFilter.toLowerCase() === "general"
+                              ? "bg-blue-500 text-white"
+                              : ""
+                          }
+                          value="general"
+                          aria-label="Filter by general priority"
+                        >
+                          General
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
+                )}
               </div>
               <div className="overflow-y-auto md:h-[calc(100vh-25rem)] h-[calc(100vh-14rem)]">
                 {filteredChats.map((chat) => (
