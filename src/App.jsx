@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
-
-import { Routes, Route, Link, BrowserRouter, Navigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Routes, Route, BrowserRouter, Navigate } from "react-router-dom";
 import { useAuth } from "./component/AuthContext";
 import Login from "./authentication/Login";
 import "./App.css";
@@ -25,26 +24,60 @@ import UserNotifications from "./page/user/UserNotifications";
 import wsManager from "./socket/socket";
 
 function App() {
-  const handleMessage = (m) => {
-    console.log("message recived");
-  };
+  const [notifications, setNotifications] = useState([]);
+  const notifyWs = useRef(null);
   const token = localStorage.getItem("token");
-  const route = "/ws/api/v1/chat/";
+
+  const handleMessage = (m) => {
+    console.log("Chat message received:", m);
+  };
+
+  const handleNotifications = (notify) => {
+    console.log("Notification received:", notify);
+    setNotifications((prev) => [...prev, notify]);
+  };
+
   useEffect(() => {
-    console.log(token);
-    if (token) {
-      wsManager.connect({ route, token });
-      wsManager.addListener(handleMessage);
-    }
-    return () => {
-      wsManager.removeListener(handleMessage);
+    if (!token) return;
+
+    // Initialize chat WebSocket
+    const chatRoute = "/ws/v1/api/chat/";
+    wsManager.connect({ route: chatRoute, token });
+    wsManager.addListener(chatRoute, handleMessage);
+
+    // Initialize notification WebSocket
+    notifyWs.current = new WebSocket(
+      `ws://192.168.10.124:3100/ws/api/notification/subscribe/?Authorization=Bearer ${token}`
+    );
+
+    notifyWs.current.onopen = () => {
+      console.log("Notification WebSocket connected");
     };
-  }, []);
+
+    notifyWs.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      handleNotifications(data);
+    };
+
+    notifyWs.current.onerror = (err) => {
+      console.error("Notification WebSocket error:", err);
+    };
+
+    notifyWs.current.onclose = () => {
+      console.log("Notification WebSocket closed");
+    };
+
+    return () => {
+      wsManager.removeListener(chatRoute, handleMessage);
+      if (notifyWs.current) {
+        notifyWs.current.close();
+      }
+    };
+  }, [token]);
 
   return (
     <BrowserRouter>
       <Routes>
-        ``
         <Route path="/" element={<Login />} />
         <Route path="/signup" element={<RegistrationPage />} />
         <Route path="/forget-password" element={<ForgetEmail />} />
@@ -68,9 +101,10 @@ function App() {
     </BrowserRouter>
   );
 }
+
 const ProtectedRoute = ({ component }) => {
   const { isAuthenticated } = useAuth();
-
   return isAuthenticated ? component : <Navigate to="/" replace />;
 };
+
 export default App;
