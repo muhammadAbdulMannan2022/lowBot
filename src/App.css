@@ -1,0 +1,88 @@
+.bg-images {
+	background-image: url('./assets/StatitsticCard.png');
+	background-repeat: no-repeat;
+}
+
+.ql-container.ql-snow {
+	border: 1px solid rgba(34, 34, 34, 0.2) !important;
+	border-radius: 10px !important;
+}
+
+.ql-toolbar.ql-snow {
+	border: none !important;
+	display: flex !important;
+	justify-content: end;
+}
+
+.background_color {
+	background-color: #07ac5e;
+}
+.box-shadow {
+	box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px,
+		rgba(0, 0, 0, 0.22) 0px 10px 10px;
+}
+
+/* Override shadcn input styles */
+
+.bg-image-clip {
+	background-image: url('./assets/clipard.svg');
+	background-repeat: no-repeat;
+}
+.rich-text-container {
+	all: unset; /* Reset all inherited styles */
+}
+
+.page_not_found {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100vh;
+}
+
+.loader {
+	width: 20px;
+	height: 20px;
+	border: 5px solid #fff;
+	border-bottom-color: transparent;
+	border-radius: 50%;
+	display: inline-block;
+	box-sizing: border-box;
+	animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.bg-image {
+	background-image: url('./assets/banner.png');
+	background-repeat: no-repeat;
+	background-size: cover; /* Ensures the entire image fits within the container */
+	background-position: center; /* Centers the image */
+	height: 90vh; /* Adjusted height to 50vh as per your requirement */
+	width: 100%;
+	margin-top: -100px;
+	z-index: -1;
+}
+
+.bg-contact {
+	background-image: url('./assets/contact.svg');
+	background-repeat: no-repeat;
+	background-size: cover; /* Ensures the entire image fits within the container */
+	background-position: center; /* Centers the image */
+
+	width: 100%;
+}
+
+@media screen and (max-width: 768px) {
+	.bg-image {
+		height: 50vh; /* Adjusted height to 50vh as per your requirement */
+		margin-top: 20px;
+	}
+}

@@ -1,0 +1,1332 @@
+// import { useState, useRef, useEffect } from 'react';
+// import axios from 'axios';
+// import { Paperclip, Plus, Video, Send, Minus, X } from 'lucide-react';
+// import { Button } from '@/components/ui/button';
+// import { cn } from '@/lib/utils';
+// import { FiMic } from 'react-icons/fi';
+// import Navbar from '../../component/user/Navbar';
+// import Sidebar from '../../component/user/UserSidebar';
+// import VoiceInput from '../../component/user/VoiceModal';
+// import OnlineVideoModal from '../../component/user/OnlineVideoModal';
+// import ChatSideBaIcon from '../../assets/chatbar.svg';
+// import videoMic from '../../assets/video.svg';
+// import voice from '../../assets/voice.svg';
+// import { Link, useNavigate, useParams } from 'react-router-dom';
+// import axiosInstance from '../../component/axiosInstance';
+// import SupportOptions from '../../components/support-options';
+// import MettingOptions from '../../components/support-options-metting';
+
+// export default function ChatInterface() {
+// 	const [activeTab, setActiveTab] = useState('solved');
+// 	const [voiceActive, setVoiceActive] = useState(false);
+// 	const [videoActive, setVideoActive] = useState(false);
+// 	const [sidebarData, setSideBarData] = useState([]);
+// 	const [message, setMessage] = useState('');
+// 	const [messages, setMessages] = useState([]);
+// 	const [showBotReply, setShowBotReply] = useState(false);
+// 	const [timeMettingShow, setTimeMettingShow] = useState(false);
+// 	const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
+// 	const [chatId, setChatId] = useState(null);
+// 	const [isLoading, setIsLoading] = useState(false);
+// 	const inputRef = useRef(null);
+// 	const navigation = useNavigate();
+// 	const route = useParams();
+
+// 	const messagesEndRef = useRef(null);
+
+// 	useEffect(() => {
+// 		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+// 	}, [messages]);
+
+// 	// Create axios instance
+
+// 	// Check for chatId in route params on mount
+// 	useEffect(() => {
+// 		const id = route.id;
+// 		console.log(id, '8666'); // Access the id parameter from the route object
+// 		if (id) {
+// 			setChatId(id);
+// 			setShowBotReply(true);
+// 			fetchChatHistory(id);
+// 		}
+// 	}, [route.id]); // Dependency is route.id, not route.params
+
+// 	// Auto-focus the input on mount
+// 	useEffect(() => {
+// 		if (inputRef.current) {
+// 			inputRef.current.focus();
+// 		}
+// 		fetchChat();
+// 	}, []);
+
+// 	const fetchChat = async () => {
+// 		try {
+// 			const response = await axiosInstance.get(`/chats/`);
+// 			const chats = response.data;
+
+// 			// Categorize chats by status and add timestamp logic
+// 			const now = new Date();
+// 			const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+// 			const yesterday = new Date(today);
+// 			yesterday.setDate(yesterday.getDate() - 1);
+
+// 			const categorizedChats = {
+// 				today: { solved: [], unsolved: [] },
+// 				yesterday: { solved: [], unsolved: [] },
+// 			};
+
+// 			chats.forEach((chat) => {
+// 				const chatDate = new Date(chat.created_at);
+// 				const isToday = chatDate >= today;
+// 				const isYesterday = chatDate >= yesterday && chatDate < today;
+// 				const category = chat.status === 'SOLVED' ? 'solved' : 'unsolved';
+
+// 				if (isToday) {
+// 					categorizedChats.today[category].push(chat);
+// 				} else if (isYesterday) {
+// 					categorizedChats.yesterday[category].push(chat);
+// 				}
+// 			});
+
+// 			setSideBarData(categorizedChats);
+// 			console.log('response', response.data);
+// 		} catch (error) {
+// 			console.error('Error fetching chat history:', error);
+// 			alert('An error occurred while fetching chat history.');
+// 		}
+// 	};
+
+// 	// Fetch chat history
+// 	const fetchChatHistory = async (id) => {
+// 		try {
+// 			const response = await axiosInstance.get(`/chats/${id}/history/`);
+// 			setMessages(response.data);
+
+// 			console.log('response', response.data);
+// 		} catch (error) {
+// 			console.error('Error fetching chat history:', error);
+// 			alert('An error occurred while fetching chat history.');
+// 		}
+// 	};
+
+// 	// Handle sending the title and creating a new chat
+// 	const handleSendMessage = async () => {
+// 		if (!message.trim()) return;
+
+// 		setIsLoading(true);
+// 		try {
+// 			// Step 1: Create a new chat with just the title
+// 			// The backend will automatically set the user field using request.user
+// 			let newChatId;
+// 			if (!chatId) {
+// 				const chatResponse = await axiosInstance.post('/chats/', {
+// 					title: message,
+// 				});
+
+// 				console.log('chatResponse', chatResponse.data.chat_id);
+
+// 				newChatId = chatResponse.data.chat_id;
+// 				// Use chat_id as per your serializer
+
+// 				await axiosInstance.post(`/chats/${newChatId}/history/`, {
+// 					message: 'Please enter a title for this conversation?',
+// 					sender_type: 'bot',
+// 				});
+
+// 				// Step 2: Navigate to the same screen with chatId as a param
+// 				setChatId(newChatId);
+// 				await axiosInstance.post(`/chats/${newChatId || chatId}/history/`, {
+// 					message: message,
+// 					sender_type: 'user',
+// 				});
+
+// 				navigation(`/chat/${newChatId}`);
+// 			}
+// 			console.log(newChatId);
+
+// 			// Step 3: Save the title as the first message in chat history
+
+// 			if (messages.length === 4) {
+// 				await axiosInstance.post(`/chats/${newChatId || chatId}/history/`, {
+// 					message: 'Please describe the topic you would like to discuss.',
+// 					sender_type: 'bot',
+// 				});
+// 			}
+// 			await axiosInstance.post(`/chats/${chatId}/history/`, {
+// 				message: message,
+// 				sender_type: 'user',
+// 			});
+// 			await fetchChatHistory(chatId);
+// 			// Update local messages state
+
+// 			setMessage('');
+// 			setShowBotReply(true);
+// 		} catch (error) {
+// 			console.error('Error creating chat:', error);
+// 			// alert('An error occurred while creating the chat.');
+// 		} finally {
+// 			setIsLoading(false);
+// 		}
+// 	};
+
+// 	// Handle priority selection
+// 	const handlePrioritySelect = async (priority) => {
+// 		if (!chatId) return;
+
+// 		setIsLoading(true);
+// 		try {
+// 			// Save the priority as a message in chat history
+// 			await axiosInstance.post(`/chats/${chatId}/history/`, {
+// 				message: 'Please choose the appropriate priority level.',
+// 				sender_type: 'bot',
+// 			});
+// 			await axiosInstance.post(`/chats/${chatId}/history/`, {
+// 				message: priority,
+// 				sender_type: 'user',
+// 			});
+// 			await axiosInstance.put(`/chats/${chatId}/`, {
+// 				problem_level: priority,
+// 			});
+// 			setMessages((prev) => [
+// 				...prev,
+// 				{
+// 					sender_type: 'bot',
+// 					message: 'Please choose the appropriate priority level.',
+// 				},
+// 			]);
+// 			setMessages((prev) => [
+// 				...prev,
+// 				{ sender_type: 'user', message: priority },
+// 			]);
+
+// 			fetchChatHistory(chatId);
+// 			// Update local messages state
+
+// 			// Open the modal after priority selection
+// 		} catch (error) {
+// 			console.error('Error saving priority:', error);
+// 			alert('An error occurred while saving the priority.');
+// 		} finally {
+// 			setIsLoading(false);
+// 		}
+// 	};
+
+// 	// Handle Enter key press to send message
+// 	const handleKeyDown = (e) => {
+// 		if (e.key === 'Enter') {
+// 			handleSendMessage();
+// 		}
+// 	};
+
+// 	// Toggle chat history sidebar
+// 	const toggleChatHistory = () => {
+// 		setIsChatHistoryOpen((prev) => !prev);
+// 	};
+
+// 	// Modal Component
+// 	const [isExpanded, setIsExpanded] = useState(false);
+
+// 	console.log('mess', messages, chatId);
+
+// 	const handleMark = async () => {
+// 		await axiosInstance.put(`chats/${chatId}/mark-as-solved/`, {});
+// 		fetchChat();
+// 		fetchChatHistory(chatId);
+// 	};
+
+// 	return (
+// 		<div className="flex flex-col h-screen bg-white">
+// 			<Button
+// 				variant="ghost"
+// 				className="fixed top-20 -left-3 z-0 md:hidden"
+// 				onClick={toggleChatHistory}
+// 				aria-label="Toggle Chat History">
+// 				<img src={ChatSideBaIcon} alt="" className="h-10 w-10" />
+// 			</Button>
+// 			<Navbar />
+// 			<div className="flex flex-1 mt-16">
+// 				{/* User Sidebar */}
+// 				<Sidebar />
+
+// 				{/* Overlay for Chat History on Mobile */}
+// 				{isChatHistoryOpen && (
+// 					<div
+// 						className="fixed inset-0 bg-black/50 z-30 md:hidden"
+// 						onClick={toggleChatHistory}
+// 						aria-hidden="true"
+// 					/>
+// 				)}
+
+// 				{/* Chat History Sidebar */}
+// 				<div
+// 					className={cn(
+// 						'fixed inset-y-0 left-0 w-64 bg-white border-r md:z-0 z-40 transition-transform duration-300 ease-in-out md:static md:w-80 md:translate-x-0',
+// 						isChatHistoryOpen ? 'translate-x-0' : '-translate-x-full'
+// 					)}>
+// 					<div className="p-4 border-b">
+// 						<h2 className="text-md font-medium text-gray-700 mb-4">
+// 							Chats History
+// 						</h2>
+// 						<Link
+// 							to={'/chat'}
+// 							onClick={() => {
+// 								setChatId(null);
+// 								setMessages([]);
+// 							}}>
+// 							<Button
+// 								variant="outline"
+// 								className="w-full flex items-center justify-center gap-2 hover:text-white">
+// 								<Plus className="h-4 w-4" />
+// 								New Chat
+// 							</Button>
+// 						</Link>
+// 					</div>
+
+// 					{/* Tabs */}
+// 					<div className="flex border-b">
+// 						<button
+// 							className={cn(
+// 								'flex-1 py-2 text-center text-sm font-medium',
+// 								activeTab === 'solved'
+// 									? 'bg-blue-500 text-white'
+// 									: 'bg-gray-100 text-gray-600'
+// 							)}
+// 							onClick={() => setActiveTab('solved')}>
+// 							Solved
+// 						</button>
+// 						<button
+// 							className={cn(
+// 								'flex-1 py-2 text-center text-sm font-medium',
+// 								activeTab === 'unsolved'
+// 									? 'bg-blue-500 text-white'
+// 									: 'bg-gray-100 text-gray-600'
+// 							)}
+// 							onClick={() => setActiveTab('unsolved')}>
+// 							Unsolved
+// 						</button>
+// 					</div>
+
+// 					{/* Chat List */}
+// 					<div className="overflow-y-auto h-[calc(100vh-300px)] px-2">
+// 						<div className="p-2">
+// 							{Object.entries(sidebarData).map(([date, categories]) => {
+// 								const hasChats =
+// 									categories.solved.length > 0 ||
+// 									categories.unsolved.length > 0;
+// 								if (!hasChats) return null;
+
+// 								return (
+// 									<div key={date}>
+// 										<h3 className="px-2 py-1 text-sm font-medium text-gray-500">
+// 											{date === 'today' ? 'Today' : 'Yesterday'}
+// 										</h3>
+// 										{activeTab === 'solved' && categories.solved.length > 0 && (
+// 											<div>
+// 												{categories.solved.map((chat) => {
+// 													return (
+// 														<div key={chat.chat_id}>
+// 															<div
+// 																className={`${
+// 																	chatId == chat.chat_id ? 'bg-[#DCEBF9]' : ''
+// 																} p-2 border shadow-md rounded-md mb-2 flex justify-between items-center cursor-pointer`}
+// 																onClick={() =>
+// 																	navigation(`/chat/${chat.chat_id}`)
+// 																}>
+// 																<span
+// 																	className="text-sm text-gray-700 truncate"
+// 																	onClick={(e) => {
+// 																		e.stopPropagation();
+// 																		navigation(`/chat/${chat.chat_id}`);
+// 																		setIsExpanded(!isExpanded);
+// 																	}}>
+// 																	{chat.title}
+// 																</span>
+// 																{isExpanded == chat.chat_id ? (
+// 																	<Minus
+// 																		className="h-4 w-4 text-gray-500 cursor-pointer"
+// 																		onClick={(e) => {
+// 																			e.stopPropagation();
+// 																			setIsExpanded(false);
+// 																		}}
+// 																	/>
+// 																) : (
+// 																	<Plus
+// 																		className="h-4 w-4 text-gray-500 cursor-pointer"
+// 																		onClick={(e) => {
+// 																			e.stopPropagation();
+// 																			setIsExpanded(chat.chat_id);
+// 																		}}
+// 																	/>
+// 																)}
+// 															</div>
+// 															{isExpanded == chat.chat_id && (
+// 																<div className="py-2 mb-1 flex items-center gap-2">
+// 																	<div className="bg-[#DCEBF9] shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2">
+// 																		<svg
+// 																			className="w-4 h-4 mr-1"
+// 																			viewBox="0 0 24 24"
+// 																			fill="none"
+// 																			xmlns="http://www.w3.org/2000/svg">
+// 																			<rect
+// 																				width="18"
+// 																				height="18"
+// 																				x="3"
+// 																				y="3"
+// 																				rx="2"
+// 																				stroke="currentColor"
+// 																				strokeWidth="2"
+// 																			/>
+// 																			<path
+// 																				d="M8 10h8M8 14h4"
+// 																				stroke="currentColor"
+// 																				strokeWidth="2"
+// 																				strokeLinecap="round"
+// 																			/>
+// 																		</svg>
+// 																		<span className="text-xs">Summary</span>
+// 																	</div>
+// 																	<div className="bg-[#DCEBF9] shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2">
+// 																		<Video className="w-4 h-4 mr-1" />
+// 																		<span className="text-xs">Watch video</span>
+// 																	</div>
+// 																</div>
+// 															)}
+// 														</div>
+// 													);
+// 												})}
+// 											</div>
+// 										)}
+// 										{activeTab === 'unsolved' &&
+// 											categories.unsolved.length > 0 && (
+// 												<div>
+// 													{categories.unsolved.map((chat) => {
+// 														return (
+// 															<div key={chat.chat_id}>
+// 																<div
+// 																	className={`${
+// 																		chatId == chat.chat_id ? 'bg-[#DCEBF9]' : ''
+// 																	} p-2 border shadow-md rounded-md mb-2 flex justify-between items-center cursor-pointer`}
+// 																	onClick={() =>
+// 																		navigation(`/chat/${chat.chat_id}`)
+// 																	}>
+// 																	<span
+// 																		className="text-sm text-gray-700 truncate"
+// 																		onClick={(e) => {
+// 																			e.stopPropagation();
+// 																			navigation(`/chat/${chat.chat_id}`);
+// 																			setIsExpanded(!isExpanded);
+// 																		}}>
+// 																		{chat.title}
+// 																	</span>
+// 																	{isExpanded == chat.chat_id ? (
+// 																		<Minus
+// 																			className="h-4 w-4 text-gray-500 cursor-pointer"
+// 																			onClick={(e) => {
+// 																				e.stopPropagation();
+// 																				setIsExpanded(false);
+// 																			}}
+// 																		/>
+// 																	) : (
+// 																		<Plus
+// 																			className="h-4 w-4 text-gray-500 cursor-pointer"
+// 																			onClick={(e) => {
+// 																				e.stopPropagation();
+// 																				setIsExpanded(chat.chat_id);
+// 																			}}
+// 																		/>
+// 																	)}
+// 																</div>
+// 																{isExpanded == chat.chat_id && (
+// 																	<div className="py-2 mb-1 flex items-center gap-2">
+// 																		<div className="bg-[#DCEBF9] shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2">
+// 																			<svg
+// 																				className="w-4 h-4 mr-1"
+// 																				viewBox="0 0 24 24"
+// 																				fill="none"
+// 																				xmlns="http://www.w3.org/2000/svg">
+// 																				<rect
+// 																					width="18"
+// 																					height="18"
+// 																					x="3"
+// 																					y="3"
+// 																					rx="2"
+// 																					stroke="currentColor"
+// 																					strokeWidth="2"
+// 																				/>
+// 																				<path
+// 																					d="M8 10h8M8 14h4"
+// 																					stroke="currentColor"
+// 																					strokeWidth="2"
+// 																					strokeLinecap="round"
+// 																				/>
+// 																			</svg>
+// 																			<span className="text-xs">Summary</span>
+// 																		</div>
+// 																		<div className="bg-[#DCEBF9] shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2">
+// 																			<Video className="w-4 h-4 mr-1" />
+// 																			<span className="text-xs">
+// 																				Watch video
+// 																			</span>
+// 																		</div>
+// 																	</div>
+// 																)}
+// 															</div>
+// 														);
+// 													})}
+// 												</div>
+// 											)}
+// 									</div>
+// 								);
+// 							})}
+// 						</div>
+// 					</div>
+// 				</div>
+// 				{/* Chat Area */}
+// 				<div className="flex-1 relative overflow-y-auto flex flex-col bg-white md:pl-[2rem]">
+// 					{/* Chat Header */}
+
+// 					{messages[0]?.chat?.status === 'UNSOLVED' && (
+// 						<div className="p-3 absolute top-3 right-2 flex justify-end">
+// 							<Button
+// 								className="bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center gap-2"
+// 								onClick={handleMark}>
+// 								<svg
+// 									className="w-5 h-5"
+// 									viewBox="0 0 24 24"
+// 									fill="none"
+// 									xmlns="http://www.w3.org/2000/svg">
+// 									<path
+// 										d="M20 6L9 17L4 12"
+// 										stroke="white"
+// 										strokeWidth="2"
+// 										strokeLinecap="round"
+// 										strokeLinejoin="round"
+// 									/>
+// 								</svg>
+// 								MARK AS SOLVED
+// 							</Button>
+// 						</div>
+// 					)}
+
+// 					{/* Chat Messages */}
+// 					{!voiceActive && (
+// 						<div
+// 							className={`flex-1 overflow-y-auto  p-4 flex flex-col justify-end`}>
+// 							{messages.length === 0 && (
+// 								<div className="max-w-md mx-auto text-center">
+// 									<h2 className="text-md font-medium">Hi, There!</h2>
+// 									<p className="text-gray-600">
+// 										Please enter a title for this conversation?
+// 									</p>
+// 								</div>
+// 							)}
+// 							{messages.length > 0 && (
+// 								<div className="flex h-[80vh] justify-end overflow-y-auto flex-col gap-4 w-full px-2 max-w-6xl mx-auto">
+// 									{messages.map((msg) => (
+// 										<div
+// 											key={msg.id} // Use msg.id instead of index for better performance
+// 											className={`flex ${
+// 												msg.sender_type === 'bot' ||
+// 												msg.sender_type === 'mentor'
+// 													? 'justify-start'
+// 													: 'justify-end'
+// 											}`}>
+// 											{msg.sender_type === 'bot' ? (
+// 												<div className="bg-blue-100 p-3 rounded-lg max-w-sm">
+// 													<span className="text-sm text-gray-800">
+// 														{msg.message}
+// 													</span>
+// 													<div className="text-xs text-gray-500 mt-1">Bot</div>
+// 												</div>
+// 											) : (
+// 												<div className="bg-gray-100 p-3 rounded-lg max-w-sm">
+// 													<span className="text-sm text-gray-800">
+// 														{msg.message}
+// 													</span>
+// 													<div className="text-xs text-gray-500 mt-1">
+// 														{msg.sender_type === 'user'
+// 															? 'You'
+// 															: msg.sender_type === 'mentor'
+// 															? 'Mentor'
+// 															: 'Bot'}
+// 													</div>
+// 												</div>
+// 											)}
+// 											<div ref={messagesEndRef} />
+// 											{/* Reference to the end of the messages */}
+// 										</div>
+// 									))}
+
+// 									{/* Bot Reply (Priority Selection) */}
+// 									{messages.length === 2 && (
+// 										<div className="flex flex-col gap-4">
+// 											<div className="flex flex-col items-center justify-center">
+// 												<p className="text-gray-700 mb-2">
+// 													Please choose the appropriate priority level.
+// 												</p>
+// 												<div className="flex gap-2 flex-wrap justify-center">
+// 													<Button
+// 														size="sm"
+// 														className="bg-blue-500 text-white hover:bg-blue-600"
+// 														onClick={() => handlePrioritySelect('Critical')}>
+// 														Critical
+// 													</Button>
+// 													<Button
+// 														size="sm"
+// 														className="bg-blue-500 text-white hover:bg-blue-600"
+// 														onClick={() => handlePrioritySelect('Medium')}>
+// 														Medium
+// 													</Button>
+// 													<Button
+// 														size="sm"
+// 														className="bg-blue-500 text-white hover:bg-blue-600"
+// 														onClick={() => handlePrioritySelect('General')}>
+// 														General
+// 													</Button>
+// 												</div>
+// 											</div>
+// 										</div>
+// 									)}
+// 									{messages.length === 4 && (
+// 										<div className="flex flex-col gap-4">
+// 											<div className="flex flex-col items-center justify-center">
+// 												<p className="text-gray-700 mb-2">
+// 													Please describe the topic you would like to discuss.
+// 												</p>
+// 											</div>
+// 										</div>
+// 									)}
+// 									{messages[0]?.chat.is_finding && (
+// 										<div className="flex flex-col items-center justify-center bg-slate-100 p-2 rounded-md">
+// 											<p className="text-gray-700 mb-2 text-center ">
+// 												Checking for available mentor's to support you. Please
+// 												Wait for a moment or continue chating with your Ai
+// 												Mentor. Mentor will message you soon.
+// 											</p>
+// 										</div>
+// 									)}
+// 									{messages.length === 7 &&
+// 										!timeMettingShow &&
+// 										messages[0].chat.is_finding === false &&
+// 										messages[0].chat?.meetings.length === 0 && (
+// 											<div className="flex flex-col gap-4">
+// 												<SupportOptions
+// 													fetchChatData={fetchChatHistory}
+// 													chatId={chatId}
+// 													setTimeMettingShow={setTimeMettingShow}
+// 												/>
+// 											</div>
+// 										)}
+
+// 									{timeMettingShow && (
+// 										<div className="flex flex-col gap-4">
+// 											<MettingOptions
+// 												fetchChatData={fetchChatHistory}
+// 												chatId={chatId}
+// 											/>
+// 										</div>
+// 									)}
+// 									{messages[0].chat?.meetings.length === 1 && (
+// 										<div className="flex flex-col gap-4 bg-[#EAF3FB] py-2 px-2 rounded-md">
+// 											<p className="text-gray-700 mb-2 text-center ">
+// 												A meeting has been scheduled with our expert to discuss
+// 												your concerns. Please be available on 16 July, 2025. at
+// 												2:30AM via Zoom. Meeting link we be available in meeting
+// 												section.
+// 											</p>
+// 										</div>
+// 									)}
+// 								</div>
+// 							)}
+// 						</div>
+// 					)}
+
+// 					{/* Voice Input Modal */}
+// 					{voiceActive && <VoiceInput setActive={setVoiceActive} />}
+
+// 					{/* Chat Input */}
+// 					<div className="w-full flex items-center justify-center mb-4 gap-2 px-4">
+// 						<img
+// 							src={videoMic}
+// 							alt="Video icon"
+// 							onClick={() => setVideoActive(true)}
+// 							className="cursor-pointer h-10 w-10"
+// 						/>
+// 						<div className="px-2 py-2 border-t bg-[#E9ECF3] w-full max-w-6xl rounded-3xl flex items-center gap-2">
+// 							<Paperclip size={23} className="text-gray-500" />
+// 							<div className="bg-white w-full rounded-3xl px-4 flex items-center justify-between">
+// 								<input
+// 									ref={inputRef}
+// 									placeholder="Start chat"
+// 									className="flex h-10 w-full border border-input bg-background px-3 py-2  file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground  disabled:cursor-not-allowed disabled:opacity-50 border-none outline-none rounded-3xl text-sm md:text-base"
+// 									value={message}
+// 									onChange={(e) => setMessage(e.target.value)}
+// 									onKeyDown={handleKeyDown}
+// 								/>
+// 								<div className="flex items-center gap-2">
+// 									<FiMic
+// 										size={20}
+// 										className="text-gray-500 cursor-pointer"
+// 										onClick={() => setVoiceActive(!voiceActive)}
+// 									/>
+// 									<img src={voice} alt="Voice icon" className="h-5 w-5" />
+// 								</div>
+// 							</div>
+// 							<button onClick={handleSendMessage} disabled={isLoading}>
+// 								<Send size={20} className="text-gray-500" />
+// 							</button>
+// 						</div>
+// 					</div>
+// 				</div>
+// 			</div>
+
+// 			{/* Online Video Modal */}
+// 			<OnlineVideoModal
+// 				isOpen={videoActive}
+// 				onClose={() => setVideoActive(false)}
+// 			/>
+// 		</div>
+// 	);
+// }
+
+import { useState, useRef, useEffect } from "react";
+import { Paperclip, Plus, Video, Send, Minus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { FiCheck, FiMic } from "react-icons/fi";
+import { CgNotes } from "react-icons/cg";
+import Navbar from "../../component/user/Navbar";
+import Sidebar from "../../component/user/UserSidebar";
+import VoiceInput from "../../component/user/VoiceModal";
+import OnlineVideoModal from "../../component/user/OnlineVideoModal";
+import ChatSideBaIcon from "../../assets/chatbar.svg";
+import videoMic from "../../assets/video.svg";
+import voice from "../../assets/voice.svg";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import axiosInstance from "../../component/axiosInstance";
+import SupportOptions from "../../components/support-options";
+import MettingOptions from "../../components/support-options-metting";
+import wsManager from "../../socket/socket";
+
+export default function ChatInterface() {
+  const [activeTab, setActiveTab] = useState("solved");
+  const [voiceActive, setVoiceActive] = useState(false);
+  const [videoActive, setVideoActive] = useState(false);
+  const [sidebarData, setSideBarData] = useState([]);
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [showBotReply, setShowBotReply] = useState(false);
+  const [timeMettingShow, setTimeMettingShow] = useState(false);
+  const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
+  const [chatId, setChatId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const inputRef = useRef(null);
+  const navigation = useNavigate();
+  const route = useParams();
+  //   chats
+  const [chatHistory, setChatHistory] = useState([]);
+
+  const messagesEndRef = useRef(null);
+
+  //   socket
+  const handleMessage = (m) => {
+    console.log("message recived");
+  };
+  const token = localStorage.getItem("token");
+  const urlFoSocket = "/ws/api/v1/chat/";
+  useEffect(() => {
+    console.log(token);
+
+    if (token) {
+      wsManager.connect({ route: urlFoSocket, token });
+      wsManager.addListener(handleMessage);
+    }
+    return () => {
+      wsManager.removeListener(handleMessage);
+    };
+  }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
+    const id = route.id;
+    console.log(id, "8666");
+    if (id) {
+      setChatId(id);
+      setShowBotReply(true);
+      fetchChatHistory(id);
+    }
+  }, [route.id]);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+    fetchChat();
+  }, []);
+  const fetchChat = async () => {
+    try {
+      const response = await axiosInstance.get(`/chats/`);
+      const chats = response.data;
+
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const categorizedChats = {
+        today: { solved: [], unsolved: [] },
+        yesterday: { solved: [], unsolved: [] },
+      };
+
+      chats.forEach((chat) => {
+        const chatDate = new Date(chat.created_at);
+        const isToday = chatDate >= today;
+        const isYesterday = chatDate >= yesterday && chatDate < today;
+        const category = chat.status === "UNSOLVED" ? "unsolved" : "solved";
+
+        if (isToday) {
+          categorizedChats.today[category].push(chat);
+        } else if (isYesterday) {
+          categorizedChats.yesterday[category].push(chat);
+        }
+      });
+
+      setSideBarData(categorizedChats);
+      console.log("response", categorizedChats);
+    } catch (error) {
+      console.error("Error fetching chat history:", error);
+      alert("An error occurred while fetching chat history.");
+    }
+  };
+
+  const fetchChatHistory = async (id) => {
+    try {
+      const response = await axiosInstance.get(`/chats/${id}/history/`);
+      setMessages(response.data);
+      console.log("response", response.data);
+    } catch (error) {
+      console.error("Error fetching chat history:", error);
+      alert("An error occurred while fetching chat history.");
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
+
+    setIsLoading(true);
+    try {
+      let newChatId;
+      if (!chatId) {
+        const chatResponse = await axiosInstance.post("/chats/", {
+          title: message,
+        });
+
+        console.log("chatResponse", chatResponse.data.chat_id);
+
+        newChatId = chatResponse.data.chat_id;
+
+        await axiosInstance.post(`/chats/${newChatId}/history/`, {
+          message: "Please enter a title for this conversation?",
+          sender_type: "bot",
+        });
+
+        setChatId(newChatId);
+        await axiosInstance.post(`/chats/${newChatId || chatId}/history/`, {
+          message: message,
+          sender_type: "user",
+        });
+
+        navigation(`/chat/${newChatId}`);
+      }
+
+      if (messages.length === 4) {
+        await axiosInstance.post(`/chats/${newChatId || chatId}/history/`, {
+          message: "Please describe the topic you would like to discuss.",
+          sender_type: "bot",
+        });
+      }
+      await axiosInstance.post(`/chats/${chatId}/history/`, {
+        message: message,
+        sender_type: "user",
+      });
+      await fetchChatHistory(chatId);
+
+      setMessage("");
+      setShowBotReply(true);
+    } catch (error) {
+      console.error("Error creating chat:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePrioritySelect = async (priority) => {
+    if (!chatId) return;
+
+    setIsLoading(true);
+    try {
+      await axiosInstance.post(`/chats/${chatId}/history/`, {
+        message: "Please choose the appropriate priority level.",
+        sender_type: "bot",
+      });
+      await axiosInstance.post(`/chats/${chatId}/history/`, {
+        message: priority,
+        sender_type: "user",
+      });
+      await axiosInstance.put(`/chats/${chatId}/`, {
+        problem_level: priority,
+      });
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender_type: "bot",
+          message: "Please choose the appropriate priority level.",
+        },
+      ]);
+      setMessages((prev) => [
+        ...prev,
+        { sender_type: "user", message: priority },
+      ]);
+
+      fetchChatHistory(chatId);
+    } catch (error) {
+      console.error("Error saving priority:", error);
+      alert("An error occurred while saving the priority.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSendMessage();
+    }
+  };
+
+  const toggleChatHistory = () => {
+    setIsChatHistoryOpen((prev) => !prev);
+  };
+
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  console.log("mess", messages, chatId);
+
+  const handleMark = async () => {
+    await axiosInstance.put(`chats/${chatId}/mark-as-solved/`, {});
+    fetchChat();
+    fetchChatHistory(chatId);
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-white">
+      <Button
+        variant="ghost"
+        className="fixed top-20 -left-3 z-0 md:hidden"
+        onClick={toggleChatHistory}
+        aria-label="Toggle Chat History"
+      >
+        <img src={ChatSideBaIcon} alt="" className="h-10 w-10" />
+      </Button>
+      <Navbar />
+      <div className="flex flex-1 mt-16">
+        <Sidebar />
+
+        {isChatHistoryOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-30 md:hidden"
+            onClick={toggleChatHistory}
+            aria-hidden="true"
+          />
+        )}
+
+        <div
+          className={cn(
+            "fixed inset-y-0 left-0 w-64 bg-white border-r md:z-0 z-40 transition-transform duration-300 ease-in-out md:static md:w-80 md:translate-x-0",
+            isChatHistoryOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
+          <div className="p-4 border-b">
+            <h2 className="text-md font-medium text-gray-700 mb-4">
+              Chats History
+            </h2>
+            <Link
+              to={"/chat"}
+              onClick={() => {
+                setChatId(null);
+                setMessages([]);
+              }}
+            >
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2 hover:text-white"
+              >
+                <Plus className="h-4 w-4" />
+                New Chat
+              </Button>
+            </Link>
+          </div>
+
+          <div className="flex border-b">
+            <button
+              className={cn(
+                "flex-1 py-2 text-center text-sm font-medium",
+                activeTab === "solved"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-600"
+              )}
+              onClick={() => setActiveTab("solved")}
+            >
+              Solved
+            </button>
+            <button
+              className={cn(
+                "flex-1 py-2 text-center text-sm font-medium",
+                activeTab === "unsolved"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-600"
+              )}
+              onClick={() => setActiveTab("unsolved")}
+            >
+              Unsolved
+            </button>
+          </div>
+
+          <div className="overflow-y-auto h-[calc(100vh-300px)] px-2">
+            <div className="p-2">
+              {Object.entries(sidebarData).map(([date, categories]) => {
+                console.log(date, categories, "side bar data");
+                const hasChats =
+                  categories.solved.length > 0 ||
+                  categories.unsolved.length > 0;
+                if (!hasChats) return null;
+
+                return (
+                  <div key={date}>
+                    <h3 className="px-2 py-1 text-sm font-medium text-gray-500">
+                      {date === "today" ? "Today" : "Yesterday"}
+                    </h3>
+                    {activeTab === "solved" && categories.solved.length > 0 && (
+                      <div>
+                        {categories.solved.map((chat) => (
+                          <div key={chat.chat_id}>
+                            <div
+                              className={`${
+                                chatId == chat.chat_id ? "bg-[#DCEBF9]" : ""
+                              } p-2 border shadow-md rounded-md mb-2 flex justify-between items-center cursor-pointer`}
+                              onClick={() =>
+                                navigation(`/chat/${chat.chat_id}`)
+                              }
+                            >
+                              <span
+                                className="text-sm text-gray-700 truncate"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigation(`/chat/${chat.chat_id}`);
+                                  setIsExpanded(!isExpanded);
+                                }}
+                              >
+                                {chat.title}
+                              </span>
+                              {isExpanded == chat.chat_id ? (
+                                <Minus
+                                  className="h-4 w-4 text-gray-500 cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsExpanded(false);
+                                  }}
+                                />
+                              ) : (
+                                <Plus
+                                  className="h-4 w-4 text-gray-500 cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsExpanded(chat.chat_id);
+                                  }}
+                                />
+                              )}
+                            </div>
+                            {isExpanded == chat.chat_id && (
+                              <div className="py-2 mb-1 flex items-center gap-2">
+                                <div className="bg-[#DCEBF9] shadow-md w-[50%] p-1 rounded-md flex items-center space-x-1 px-4 py-2">
+                                  <CgNotes sclassName="w-4 h-4" />
+                                  <span className="text-xs">Summary</span>
+                                </div>
+                                <div className="bg-[#DCEBF9] shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2">
+                                  <Video className="w-4 h-4 mr-1" />
+                                  <span className="text-xs">Watch video</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {activeTab === "unsolved" &&
+                      categories.unsolved.length > 0 && (
+                        <div>
+                          {categories.unsolved.map((chat) => (
+                            <div key={chat.chat_id}>
+                              <div
+                                className={`${
+                                  chatId == chat.chat_id ? "bg-[#DCEBF9]" : ""
+                                } p-2 border shadow-md rounded-md mb-2 flex justify-between items-center cursor-pointer`}
+                                onClick={() =>
+                                  navigation(`/chat/${chat.chat_id}`)
+                                }
+                              >
+                                <span
+                                  className="text-sm text-gray-700 truncate"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigation(`/chat/${chat.chat_id}`);
+                                    setIsExpanded(!isExpanded);
+                                  }}
+                                >
+                                  {chat.title}
+                                </span>
+                                {isExpanded == chat.chat_id ? (
+                                  <Minus
+                                    className="h-4 w-4 text-gray-500 cursor-pointer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setIsExpanded(false);
+                                    }}
+                                  />
+                                ) : (
+                                  <Plus
+                                    className="h-4 w-4 text-gray-500 cursor-pointer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setIsExpanded(chat.chat_id);
+                                    }}
+                                  />
+                                )}
+                              </div>
+                              {isExpanded == chat.chat_id && (
+                                <div className="py-2 mb-1 flex items-center gap-2 cursor-pointer">
+                                  <div className="bg-[#DCEBF9]  shadow-md w-[50%] p-1 rounded-md flex space-x-1 items-center px-4 py-2">
+                                    <CgNotes sclassName="w-4 h-4" />
+
+                                    <span className="text-xs">Summary</span>
+                                  </div>
+                                  <div className="bg-[#DCEBF9] shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2">
+                                    <Video className="w-4 h-4 mr-1" />
+                                    <span className="text-xs">Watch video</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 relative flex flex-col bg-white md:pl-[2rem]">
+          {messages[0]?.chat?.status === "UNSOLVED" && (
+            <div className="p-3 absolute top-3 right-2 flex justify-end">
+              <Button
+                className="bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center gap-2"
+                onClick={handleMark}
+              >
+                <FiCheck className="h-10 w-10" />
+                MARK AS SOLVED
+              </Button>
+            </div>
+          )}
+
+          {!voiceActive && (
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col">
+              <div
+                className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-100 scrollbar-track-gray-100"
+                style={{ maxHeight: "calc(100vh - 200px)" }}
+              >
+                {messages.length === 0 && (
+                  <div className="max-w-md mx-auto text-center pt-20">
+                    <h2 className="text-md font-medium">Hi, There!</h2>
+                    <p className="text-gray-600">
+                      Please enter a title for this conversation?
+                    </p>
+                  </div>
+                )}
+                {messages.length > 0 && (
+                  <div className="flex flex-col gap-4 w-full px-2 max-w-6xl mx-auto">
+                    {messages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={`flex ${
+                          msg.sender_type === "bot" ||
+                          msg.sender_type === "mentor"
+                            ? "justify-start"
+                            : "justify-end"
+                        }`}
+                      >
+                        {msg.sender_type === "bot" ? (
+                          <div className="bg-blue-100 p-3 rounded-lg max-w-sm">
+                            <span className="text-sm text-gray-800">
+                              {msg.message}
+                            </span>
+                            <div className="text-xs text-gray-500 mt-1">
+                              Bot
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="bg-gray-100 p-3 rounded-lg max-w-sm">
+                            <span className="text-sm text-gray-800">
+                              {msg.message}
+                            </span>
+                            <div className="text-xs text-gray-500 mt-1">
+                              {msg.sender_type === "user"
+                                ? "You"
+                                : msg.sender_type === "mentor"
+                                ? "Mentor"
+                                : "Bot"}
+                            </div>
+                          </div>
+                        )}
+                        <div ref={messagesEndRef} />
+                      </div>
+                    ))}
+
+                    {messages.length === 2 && (
+                      <div className="flex flex-col gap-4">
+                        <div className="flex flex-col items-center justify-center">
+                          <p className="text-gray-700 mb-2">
+                            Please choose the appropriate priority level.
+                          </p>
+                          <div className="flex gap-2 flex-wrap justify-center">
+                            <Button
+                              size="sm"
+                              className="bg-blue-500 text-white hover:bg-blue-600"
+                              onClick={() => handlePrioritySelect("Critical")}
+                            >
+                              Critical
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="bg-blue-500 text-white hover:bg-blue-600"
+                              onClick={() => handlePrioritySelect("Medium")}
+                            >
+                              Medium
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="bg-blue-500 text-white hover:bg-blue-600"
+                              onClick={() => handlePrioritySelect("General")}
+                            >
+                              General
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {messages.length === 4 && (
+                      <div className="flex flex-col gap-4">
+                        <div className="flex flex-col items-center justify-center">
+                          <p className="text-gray-700 mb-2">
+                            Please describe the topic you would like to discuss.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {messages[0]?.chat.is_finding && (
+                      <div className="flex flex-col items-center justify-center bg-slate-100 p-2 rounded-md">
+                        <p className="text-gray-700 mb-2 text-center">
+                          Checking for available mentor's to support you. Please
+                          Wait for a moment or continue chating with your Ai
+                          Mentor. Mentor will message you soon.
+                        </p>
+                      </div>
+                    )}
+                    {messages.length === 7 &&
+                      !timeMettingShow &&
+                      messages[0].chat.is_finding === false &&
+                      messages[0].chat?.meetings.length === 0 && (
+                        <div className="flex flex-col gap-4">
+                          <SupportOptions
+                            fetchChatData={fetchChatHistory}
+                            chatId={chatId}
+                            setTimeMettingShow={setTimeMettingShow}
+                          />
+                        </div>
+                      )}
+
+                    {timeMettingShow && (
+                      <div className="flex flex-col gap-4">
+                        <MettingOptions
+                          fetchChatData={fetchChatHistory}
+                          chatId={chatId}
+                        />
+                      </div>
+                    )}
+                    {messages[0].chat?.meetings.length === 1 && (
+                      <div className="flex flex-col gap-4 bg-[#EAF3FB] py-2 px-2 rounded-md">
+                        <p className="text-gray-700 mb-2 text-center">
+                          A meeting has been scheduled with our expert to
+                          discuss your concerns. Please be available on 16 July,
+                          2025. at 2:30AM via Zoom. Meeting link we be available
+                          in meeting section.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {voiceActive && <VoiceInput setActive={setVoiceActive} />}
+
+          <div className="w-full flex items-center justify-center mb-4 gap-2 px-4">
+            <img
+              src={videoMic}
+              alt="Video icon"
+              onClick={() => setVideoActive(true)}
+              className="cursor-pointer h-10 w-10"
+            />
+            <div className="px-2 py-2 border-t bg-[#E9ECF3] w-full max-w-6xl rounded-3xl flex items-center gap-2">
+              <Paperclip size={23} className="text-gray-500" />
+              <div className="bg-white w-full rounded-3xl px-4 flex items-center justify-between">
+                <input
+                  ref={inputRef}
+                  placeholder="Start chat"
+                  className="flex h-10 w-full border border-input bg-background px-3 py-2 text-sm md:text-base file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 border-none outline-none rounded-3xl"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                />
+                <div className="flex items-center gap-2">
+                  <FiMic
+                    size={20}
+                    className="text-gray-500 cursor-pointer"
+                    onClick={() => setVoiceActive(!voiceActive)}
+                  />
+                  <img src={voice} alt="Voice icon" className="h-5 w-5" />
+                </div>
+              </div>
+              <button onClick={handleSendMessage} disabled={isLoading}>
+                <Send size={20} className="text-gray-500" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <OnlineVideoModal
+        isOpen={videoActive}
+        onClose={() => setVideoActive(false)}
+        onConfirm={() => {
+          setTimeMettingShow(true);
+          setVideoActive(false);
+        }}
+      />
+    </div>
+  );
+}

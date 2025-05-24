@@ -1,0 +1,194 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import {
+	FiSearch,
+	FiInfo,
+	FiMoreHorizontal,
+	FiTrash2,
+	FiAlertTriangle,
+} from 'react-icons/fi';
+import UserDetailsModal from '../../component/admin/UserDetailsModal';
+import GiveNoticeModal from '../../component/admin/GiveNoticeModal';
+import Sidebar from '../../component/admin/Sidebar';
+
+const users = [
+	{ id: '55-1234', name: 'Takács Bianka', startingDate: '12 July 2024' },
+	{ id: '55-1234', name: 'Sipos Veronika', startingDate: '12 July 2024' },
+	{ id: '55-1234', name: 'Nagy Timea', startingDate: '12 July 2024' },
+	{ id: '55-1234', name: 'Kende Lili', startingDate: '12 July 2024' },
+	{ id: '55-1234', name: 'Pásztor Kira', startingDate: '12 July 2024' },
+	{ id: '55-1234', name: 'Virág Mercédesz', startingDate: '12 July 2024' },
+	{ id: '55-1234', name: 'Hajdú Dominika', startingDate: '12 July 2024' },
+	{ id: '55-1234', name: 'Balázs Annamária', startingDate: '12 July 2024' },
+	{ id: '55-1234', name: 'Kelemen Krisztina', startingDate: '12 July 2024' },
+];
+
+const UserManagement = () => {
+	const [searchTerm, setSearchTerm] = useState('');
+	const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] = useState(false);
+	const [isGiveNoticeModalOpen, setIsGiveNoticeModalOpen] = useState(false);
+	const [dropdownIndex, setDropdownIndex] = useState(null);
+	const [selectedUser, setSelectedUser] = useState(null);
+
+	const dropdownRefs = useRef([]); // Array to store refs for each dropdown
+
+	const filteredUsers = users.filter(
+		(user) =>
+			user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			user.id.includes(searchTerm)
+	);
+
+	const toggleDropdown = (index) => {
+		setDropdownIndex(dropdownIndex === index ? null : index);
+	};
+
+	const handleDeleteAccount = (user) => {
+		console.log(`Deleting account for user: ${user.name}`);
+		// Add your delete account logic here (e.g., API call)
+		setDropdownIndex(null);
+	};
+
+	const handleGiveNotice = (user) => {
+		setSelectedUser(user);
+		setIsGiveNoticeModalOpen(true);
+		setDropdownIndex(null);
+	};
+
+	// Close dropdown on outside click
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			const isOutside = dropdownRefs.current.every(
+				(ref, index) =>
+					!ref || !ref.contains(event.target) || dropdownIndex !== index
+			);
+
+			if (isOutside && dropdownIndex !== null) {
+				setDropdownIndex(null);
+			}
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
+	}, [dropdownIndex]);
+
+	return (
+		<div className="flex flex-col h-screen bg-[#f0f7ff]">
+			<Sidebar>
+				<div className="flex-1 overflow-y-auto mt-20 p-4 md:p-6 md:pl-7 ">
+					{/* Header and Search Bar */}
+					<div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+						<h1 className="text-xl md:text-2xl font-semibold text-gray-800">
+							User Management
+						</h1>
+						<div className="relative w-full sm:w-auto">
+							<input
+								type="text"
+								placeholder="Search by username or ID"
+								value={searchTerm}
+								onChange={(e) => setSearchTerm(e.target.value)}
+								className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+								aria-label="Search users by username or ID"
+							/>
+							<FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+						</div>
+					</div>
+
+					{/* Responsive Table */}
+					<div className="bg-white rounded-lg shadow-sm overflow-x-auto">
+						<table className="w-full text-left min-w-[600px]">
+							<thead>
+								<tr className="bg-gray-200 text-gray-600 text-xs md:text-sm font-medium">
+									<th className="py-2 px-2 md:py-3 md:px-4" scope="col">
+										User ID
+									</th>
+									<th className="py-2 px-2 md:py-3 md:px-4" scope="col">
+										Name
+									</th>
+									<th className="py-2 px-2 md:py-3 md:px-4" scope="col">
+										Starting Date
+									</th>
+									<th className="py-2 px-2 md:py-3 md:px-4" scope="col">
+										User Info
+									</th>
+									<th className="py-2 px-2 md:py-3 md:px-4" scope="col">
+										Action
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								{filteredUsers.map((user, index) => (
+									<tr
+										key={index}
+										className="border-t border-gray-200 text-gray-700 text-xs md:text-sm hover:bg-gray-50 relative">
+										<td className="py-2 px-2 md:py-3 md:px-4 truncate">
+											{user.id}
+										</td>
+										<td className="py-2 px-2 md:py-3 md:px-4">{user.name}</td>
+										<td className="py-2 px-2 md:py-3 md:px-4">
+											{user.startingDate}
+										</td>
+										<td className="py-2 px-2 md:py-3 md:px-4">
+											<button
+												className="flex items-center text-gray-600 hover:text-blue-600"
+												onClick={() => setIsUserDetailsModalOpen(true)}
+												aria-label={`View details for ${user.name}`}>
+												<FiInfo className="mr-1 h-4 w-4" />
+												Click
+											</button>
+										</td>
+										<td className="py-2 px-2 md:py-3 md:px-4">
+											<button
+												onClick={() => toggleDropdown(index)}
+												className="text-gray-600 hover:text-blue-600"
+												aria-label={`More actions for ${user.name}`}>
+												<FiMoreHorizontal className="h-5 w-5" />
+											</button>
+											{dropdownIndex === index && (
+												<div
+													ref={(el) => (dropdownRefs.current[index] = el)}
+													className="absolute right-0 top-10 bg-white border border-gray-200 rounded-lg shadow-lg z-10 w-48">
+													<button
+														onClick={() => handleDeleteAccount(user)}
+														className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left text-xs md:text-sm"
+														aria-label={`Delete account for ${user.name}`}>
+														<FiTrash2 className="mr-2 h-4 w-4 text-gray-600" />
+														Delete Account
+													</button>
+													<button
+														onClick={() => handleGiveNotice(user)}
+														className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left text-xs md:text-sm"
+														aria-label={`Give notice to ${user.name}`}>
+														<FiAlertTriangle className="mr-2 h-4 w-4 text-gray-600" />
+														Give a Notice
+													</button>
+												</div>
+											)}
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				{/* User Details Modal */}
+				<UserDetailsModal
+					isOpen={isUserDetailsModalOpen}
+					onClose={() => setIsUserDetailsModalOpen(false)}
+				/>
+
+				{/* Give Notice Modal */}
+				<GiveNoticeModal
+					isOpen={isGiveNoticeModalOpen}
+					onClose={() => setIsGiveNoticeModalOpen(false)}
+					user={selectedUser}
+				/>
+			</Sidebar>
+		</div>
+	);
+};
+
+export default UserManagement;
