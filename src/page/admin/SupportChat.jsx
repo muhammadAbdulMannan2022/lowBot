@@ -28,7 +28,9 @@ export default function SupportChat() {
   // Fetch all chats for the mentor
   const fetchChats = async () => {
     try {
-      const response = await axiosInstance.get("/chats/"); // Adjust endpoint as needed
+      const response = await axiosInstance.get(
+        "/realtime/chats/list_user_chats/"
+      ); // Adjust endpoint as needed
       setChats(response.data);
     } catch (error) {
       console.error("Error fetching chats:", error);
@@ -107,7 +109,9 @@ export default function SupportChat() {
     try {
       await axiosInstance.put(`/chats/${chatId}/mentor_accept_request/`);
       // Refresh chats after accepting
-      const response = await axiosInstance.get("/chats/");
+      const response = await axiosInstance.get(
+        "/realtime/chats/list_user_chats/"
+      );
       setChats(response.data);
 
       const filter = response.data.find((item) => item.chat_id === chatId);
