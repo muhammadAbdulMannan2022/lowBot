@@ -736,11 +736,12 @@ export default function ChatInterface() {
       `ws://192.168.10.124:3100/ws/api/v1/chat/?Authorization=Bearer ${token}`
     );
     chatWs.current.onopen = () => {
-      console.log("chat WebSocket connected");
+      console.log("chat WebSocket connected user chat page");
     };
 
     chatWs.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      console.log(data.message);
       const receivedData = data.message;
       const mess = {
         id: receivedData.id,

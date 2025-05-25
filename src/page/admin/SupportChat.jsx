@@ -13,6 +13,7 @@ import Sidebar from "../../component/admin/Sidebar";
 import ChatSideBaIcon from "../../assets/chatbar.svg";
 import axiosInstance from "../../component/axiosInstance";
 import { Link, useParams } from "react-router-dom";
+import { useAuth } from "../../component/AuthContext";
 
 export default function SupportChat() {
   const [activeFilter, setActiveFilter] = useState("critical");
@@ -26,6 +27,7 @@ export default function SupportChat() {
   const [chatId, setChatId] = useState(null);
   const [isRequest, setIsRequest] = useState(true);
   const [oldChats, setOldChats] = useState([]);
+  const { auth } = useAuth();
   // socket
   const chatWs = useRef(null);
   const token = localStorage.getItem("token");
@@ -40,7 +42,24 @@ export default function SupportChat() {
 
     chatWs.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      setMessages((prevMessage) => [...prevMessage, data.message]);
+      console.log(data.message);
+      const receivedData = data.message;
+      const mess = {
+        id: receivedData.id,
+        message: receivedData.message,
+        attachment_name: receivedData.attachment_name || null,
+        attachment_data: receivedData.attachment_data || null,
+        sender: receivedData.sender,
+        receiver: receivedData.receiver,
+        reply_to: receivedData.reply_to,
+        timestamp: receivedData.timestamp,
+        is_read: receivedData.is_read,
+        is_deleted: receivedData.is_deleted,
+        is_edited: receivedData.is_edited,
+        is_reported: receivedData.is_reported,
+        sender_type: receivedData.sender_type || "user",
+      };
+      setMessages((prevMessage) => [...prevMessage, mess]);
       console.log(data, messages);
     };
 
@@ -101,7 +120,11 @@ export default function SupportChat() {
         : "/chats/help_desk/running/list/";
       const chat = await axiosInstance.get(endpoint);
       // const chat = await axiosInstance.get("/chats/help-desk/tickets/list/");
-      const filter = chat.data.find((item) => item.chat_id === chat_id);
+      const filter = chat.data.find((item) => {
+        console.log(item.chat_id, chat_id);
+        return item.chat_id === chat_id;
+      });
+
       setSelectedChat(filter);
       // setActiveFilter(filter.problem_level);
     } catch (error) {
@@ -116,7 +139,7 @@ export default function SupportChat() {
 
       fetchMessages(chat_id);
     }
-  }, [route.id]);
+  }, [route.id, isRequest]);
 
   // Auto-scroll to the latest message
   useEffect(() => {
@@ -138,7 +161,12 @@ export default function SupportChat() {
     const user_to_send = chats.find((chat) => chat.chat_id === chatId);
     console.log(user_to_send?.user);
     chatWs.current.send(
-      JSON.stringify({ user_id: user_to_send?.user, message, chat_id: chatId })
+      JSON.stringify({
+        user_id: user_to_send?.user,
+        message,
+        main_chat_id: chatId,
+        sender_type: "mentor",
+      })
     );
     try {
       await axiosInstance.post(`/chats/${chatId}/history/`, {
@@ -166,7 +194,7 @@ export default function SupportChat() {
     if (!selectedChat) return;
 
     try {
-      await axiosInstance.put(`/chats/${chatId}/mentor_accept_request/`);
+      await axiosInstance.post(`/chats/help_desk/approved/${chatId}/`);
       // Refresh chats after accepting
       const response = await axiosInstance.get(
         "/realtime/chats/list_user_chats/"
