@@ -26,7 +26,7 @@ export default function SupportOptions({
       await axiosInstance.post(`/chats/help-desk/request/`, {
         chat_id: chatId,
       });
-      // setIsLiveChat(true);
+      setIsLiveChat(true);
       fetchChatData(chatId);
     }
     if (optionNumber === 3) {

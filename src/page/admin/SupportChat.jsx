@@ -28,20 +28,23 @@ export default function SupportChat() {
   const [oldChats, setOldChats] = useState([]);
 
   const handleRToggle = () => {
-    setIsRequest(!isRequest);
+    setIsRequest((prev) => !prev);
   };
+
   // Fetch all chats for the mentor
   const fetchChats = async () => {
     try {
-      const response = await axiosInstance.get(
-        "/chats/help-desk/tickets/list/"
-      ); // Adjust endpoint as needed
+      const endpoint = isRequest
+        ? "/chats/help-desk/tickets/list/"
+        : "/chats/help_desk/running/list/";
+      const response = await axiosInstance.get(endpoint);
       setChats(response.data);
     } catch (error) {
       console.error("Error fetching chats:", error);
       alert("An error occurred while fetching chats.");
     }
   };
+
   useEffect(() => {
     fetchChats();
     const interval = setInterval(() => {
@@ -50,7 +53,7 @@ export default function SupportChat() {
     return () => {
       clearInterval(interval);
     };
-  }, []);
+  }, [isRequest]);
 
   const fetchMessages = async (chat_id) => {
     try {
