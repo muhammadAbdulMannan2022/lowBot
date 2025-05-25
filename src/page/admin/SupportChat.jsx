@@ -25,6 +25,7 @@ export default function SupportChat() {
   const route = useParams();
   const [chatId, setChatId] = useState(null);
   const [isRequest, setIsRequest] = useState(true);
+  const [oldChats, setOldChats] = useState([]);
 
   const handleRToggle = () => {
     setIsRequest(!isRequest);
@@ -43,6 +44,12 @@ export default function SupportChat() {
   };
   useEffect(() => {
     fetchChats();
+    const interval = setInterval(() => {
+      fetchChats();
+    }, 10000);
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
   const fetchMessages = async (chat_id) => {
@@ -50,8 +57,8 @@ export default function SupportChat() {
       const response = await axiosInstance.get(
         `/realtime/chats/history/${chat_id}/`
       );
-      setMessages(response.data);
-      const chat = await axiosInstance.get("/chats/");
+      setMessages(response.data?.bot_messages);
+      const chat = await axiosInstance.get("/chats/help-desk/tickets/list/");
       const filter = chat.data.find((item) => item.chat_id === chat_id);
       setSelectedChat(filter);
       setActiveFilter(filter.problem_level);
@@ -76,6 +83,7 @@ export default function SupportChat() {
 
   // Filter chats based on priority
   const filteredChats = chats.filter((chat) => {
+    console.log(chat.problem_level);
     if (activeFilter === "critical") return chat.problem_level === "Critical";
     if (activeFilter === "medium") return chat.problem_level === "Medium";
     if (activeFilter === "general") return chat.problem_level === "General";
@@ -116,11 +124,12 @@ export default function SupportChat() {
       const response = await axiosInstance.get(
         "/realtime/chats/list_user_chats/"
       );
-      setChats(response.data);
+      setOldChats(response.data);
 
       const filter = response.data.find((item) => item.chat_id === chatId);
 
       setSelectedChat(filter);
+      setMessage("");
     } catch (error) {
       console.error("Error accepting chat:", error);
       alert("An error occurred while accepting the chat.");
@@ -275,16 +284,22 @@ export default function SupportChat() {
                   >
                     <Avatar>
                       <img
-                        src={`http://127.0.0.1:8000${chat?.user?.user_profile?.profile_picture}`}
+                        src={
+                          `http://127.0.0.1:8000${chat?.user?.user_profile?.profile_picture}` ||
+                          chat.image
+                        }
                         alt={chat?.user?.username || "User"}
                         className="h-10 w-10 rounded-full"
                       />
                     </Avatar>
                     <span className="text-sm md:text-base">
-                      {chat?.user?.user_profile?.first_name || "Unknown User"}
+                      {chat?.user?.user_profile?.first_name ||
+                        chat?.username ||
+                        "Unknown User"}
                     </span>
                   </Link>
                 ))}
+                {console.log(chats)}
               </div>
             </div>
 

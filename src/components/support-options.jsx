@@ -20,10 +20,13 @@ export default function SupportOptions({
       fetchChatData(chatId);
     }
     if (optionNumber === 2) {
+      console.log({
+        chat_id: chatId,
+      });
       await axiosInstance.post(`/chats/help-desk/request/`, {
         chat_id: chatId,
       });
-      setIsLiveChat(true);
+      // setIsLiveChat(true);
       fetchChatData(chatId);
     }
     if (optionNumber === 3) {

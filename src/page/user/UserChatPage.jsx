@@ -780,6 +780,12 @@ export default function ChatInterface() {
       inputRef.current.focus();
     }
     fetchChat();
+    const interval = setInterval(() => {
+      fetchChat();
+    }, 10000);
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
   const fetchChat = async () => {
     try {
