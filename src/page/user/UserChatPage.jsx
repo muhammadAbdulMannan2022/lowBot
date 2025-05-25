@@ -706,7 +706,6 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../component/axiosInstance";
 import SupportOptions from "../../components/support-options";
 import MettingOptions from "../../components/support-options-metting";
-import wsManager from "../../socket/socket";
 
 export default function ChatInterface() {
   const [activeTab, setActiveTab] = useState("solved");
@@ -722,6 +721,8 @@ export default function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef(null);
   const navigation = useNavigate();
+  // mentros id
+  const [mentorsId, setMentorsId] = useState([]);
   const route = useParams();
   const chatWs = useRef(null);
 
@@ -759,7 +760,7 @@ export default function ChatInterface() {
         chatWs.current.close();
       }
     };
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -791,6 +792,11 @@ export default function ChatInterface() {
     try {
       const response = await axiosInstance.get(`/chats/`);
       const chats = response.data;
+      const mentors = chats.map((chat) => ({
+        chat_id: chat.chat_id,
+        mentor_id: chat?.mentor,
+      }));
+      setMentorsId(mentors);
 
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -836,6 +842,29 @@ export default function ChatInterface() {
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
+    console.log(mentorsId, "mentores id is");
+    // Find the mentor_id for the current chatId
+    const mentor = mentorsId.find((mentor) => mentor.chat_id === chatId);
+    const mentorId = mentor ? mentor.mentor_id : null;
+
+    console.log("Sending message:", { message, chatId, mentorId });
+    // Send WebSocket message
+    if (mentorId !== "" && typeof mentorId == "string") {
+      console.log("sending throught socket");
+      if (chatWs.current && chatWs.current.readyState === WebSocket.OPEN) {
+        chatWs.current.send(
+          JSON.stringify({
+            message: message,
+            main_chat_id: chatId,
+            user_id: mentorId,
+          })
+        );
+      } else {
+        console.error("WebSocket is not open");
+        alert("Unable to send message: WebSocket connection is not open.");
+        return;
+      }
+    }
 
     setIsLoading(true);
     try {
@@ -845,8 +874,7 @@ export default function ChatInterface() {
           title: message,
         });
 
-        console.log("chatResponse", chatResponse.data.chat_id);
-
+        console.log("Chat created:", chatResponse.data.chat_id);
         newChatId = chatResponse.data.chat_id;
 
         await axiosInstance.post(`/chats/${newChatId}/history/`, {
@@ -875,10 +903,12 @@ export default function ChatInterface() {
       });
       await fetchChatHistory(chatId);
 
+      await fetchChatHistory(chatId || newChatId);
       setMessage("");
       setShowBotReply(true);
     } catch (error) {
       console.error("Error creating chat:", error);
+      alert("An error occurred while creating the chat.");
     } finally {
       setIsLoading(false);
     }

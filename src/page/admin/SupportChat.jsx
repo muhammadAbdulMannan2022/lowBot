@@ -26,7 +26,40 @@ export default function SupportChat() {
   const [chatId, setChatId] = useState(null);
   const [isRequest, setIsRequest] = useState(true);
   const [oldChats, setOldChats] = useState([]);
+  // socket
+  const chatWs = useRef(null);
+  const token = localStorage.getItem("token");
+  useEffect(() => {
+    console.log(token);
+    chatWs.current = new WebSocket(
+      `ws://192.168.10.124:3100/ws/api/v1/chat/?Authorization=Bearer ${token}`
+    );
+    chatWs.current.onopen = () => {
+      console.log("chat WebSocket connected");
+    };
 
+    chatWs.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log(data);
+    };
+
+    chatWs.current.onerror = (err) => {
+      console.error("chat WebSocket error:", err);
+    };
+
+    chatWs.current.onclose = () => {
+      console.log("chat WebSocket closed");
+    };
+
+    return () => {
+      if (chatWs.current) {
+        chatWs.current.close();
+      }
+    };
+  }, [token]);
+  //
+  //
+  //
   const handleRToggle = () => {
     setIsRequest((prev) => !prev);
   };
@@ -61,6 +94,8 @@ export default function SupportChat() {
         `/realtime/chats/history/${chat_id}/`
       );
       setMessages(response.data?.bot_messages);
+      console.log(response.data?.bot_messages);
+
       const chat = await axiosInstance.get("/chats/help-desk/tickets/list/");
       const filter = chat.data.find((item) => item.chat_id === chat_id);
       setSelectedChat(filter);
@@ -95,26 +130,27 @@ export default function SupportChat() {
 
   // Handle sending a message
   const handleSendMessage = async () => {
+    chatWs.current.send({ user_id: "chat", message, chat_id: chatId });
     if (!message.trim() || !selectedChat) return;
-    try {
-      await axiosInstance.post(`/chats/${chatId}/history/`, {
-        message: message,
-        sender_type: "mentor",
-      });
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now(),
-          sender_type: "mentor",
-          message: message,
-          timestamp: new Date(),
-        },
-      ]);
-      setMessage("");
-    } catch (error) {
-      console.error("Error sending message:", error);
-      alert("An error occurred while sending the message.");
-    }
+    // try {
+    //   await axiosInstance.post(`/chats/${chatId}/history/`, {
+    //     message: message,
+    //     sender_type: "mentor",
+    //   });
+    //   setMessages((prev) => [
+    //     ...prev,
+    //     {
+    //       id: Date.now(),
+    //       sender_type: "mentor",
+    //       message: message,
+    //       timestamp: new Date(),
+    //     },
+    //   ]);
+    //   setMessage("");
+    // } catch (error) {
+    //   console.error("Error sending message:", error);
+    //   alert("An error occurred while sending the message.");
+    // }
   };
 
   // Handle accepting a chat
@@ -368,7 +404,7 @@ export default function SupportChat() {
                     </div>
 
                     {/* Support Request */}
-                    {selectedChat?.mentor?.length > 1 && (
+                    {!(selectedChat?.mentor?.length < 1) && (
                       <div className="p-4 border-b flex flex-col gap-4 justify-between items-center">
                         <span className="text-sm md:text-base">
                           Person giving you support request?
