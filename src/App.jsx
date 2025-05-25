@@ -35,8 +35,8 @@ function App() {
     if (!token) return;
 
     // Initialize chat WebSocket
-    const chatRoute = "/ws/v1/api/chat/";
-    wsManager.connect({ route: chatRoute, token });
+    // const chatRoute = "/ws/v1/api/chat/";
+    // wsManager.connect({ route: chatRoute, token });
     // wsManager.addListener(chatRoute, handleMessage);
 
     chatWs.current = new WebSocket(

@@ -729,9 +729,6 @@ export default function ChatInterface() {
   const messagesEndRef = useRef(null);
 
   //   socket
-  const handleMessage = (m) => {
-    console.log("message recived");
-  };
   const token = localStorage.getItem("token");
   useEffect(() => {
     console.log(token);
@@ -744,7 +741,23 @@ export default function ChatInterface() {
 
     chatWs.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      handleMessage(data);
+      const receivedData = data.message;
+      const mess = {
+        id: receivedData.id,
+        message: receivedData.message,
+        attachment_name: receivedData.attachment_name || null,
+        attachment_data: receivedData.attachment_data || null,
+        sender: receivedData.sender,
+        receiver: receivedData.receiver,
+        reply_to: receivedData.reply_to,
+        timestamp: receivedData.timestamp,
+        is_read: receivedData.is_read,
+        is_deleted: receivedData.is_deleted,
+        is_edited: receivedData.is_edited,
+        is_reported: receivedData.is_reported,
+        sender_type: receivedData.sender_type || "mentor",
+      };
+      setMessages((prev) => [...prev, mess]);
     };
 
     chatWs.current.onerror = (err) => {
@@ -963,7 +976,7 @@ export default function ChatInterface() {
 
   const [isExpanded, setIsExpanded] = useState(false);
 
-  console.log("mess", messages, chatId);
+  // console.log("mess", messages, chatId);
 
   const handleMark = async () => {
     await axiosInstance.put(`chats/${chatId}/mark-as-solved/`, {});
