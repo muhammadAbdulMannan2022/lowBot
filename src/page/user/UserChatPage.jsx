@@ -727,6 +727,10 @@ export default function ChatInterface() {
   const chatWs = useRef(null);
 
   const messagesEndRef = useRef(null);
+  useEffect(() => {
+    setChatId(route.id);
+    console.log(route.id, "route id");
+  }, [route]);
 
   //   socket
   const token = localStorage.getItem("token");
@@ -741,24 +745,27 @@ export default function ChatInterface() {
 
     chatWs.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log(data.message);
       const receivedData = data.message;
-      const mess = {
-        id: receivedData.id,
-        message: receivedData.message,
-        attachment_name: receivedData.attachment_name || null,
-        attachment_data: receivedData.attachment_data || null,
-        sender: receivedData.sender,
-        receiver: receivedData.receiver,
-        reply_to: receivedData.reply_to,
-        timestamp: receivedData.timestamp,
-        is_read: receivedData.is_read,
-        is_deleted: receivedData.is_deleted,
-        is_edited: receivedData.is_edited,
-        is_reported: receivedData.is_reported,
-        sender_type: receivedData.sender_type || "mentor",
-      };
-      setMessages((prev) => [...prev, mess]);
+      console.log(data.main_chat_id, chatId);
+      if (data.main_chat_id === chatId) {
+        console.log(data.message);
+        const mess = {
+          id: receivedData.id,
+          message: receivedData.message,
+          attachment_name: receivedData.attachment_name || null,
+          attachment_data: receivedData.attachment_data || null,
+          sender: receivedData.sender,
+          receiver: receivedData.receiver,
+          reply_to: receivedData.reply_to,
+          timestamp: receivedData.timestamp,
+          is_read: receivedData.is_read,
+          is_deleted: receivedData.is_deleted,
+          is_edited: receivedData.is_edited,
+          is_reported: receivedData.is_reported,
+          sender_type: receivedData.sender_type || "mentor",
+        };
+        setMessages((prev) => [...prev, mess]);
+      }
     };
 
     chatWs.current.onerror = (err) => {
@@ -774,7 +781,7 @@ export default function ChatInterface() {
         chatWs.current.close();
       }
     };
-  }, []);
+  }, [chatId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -844,6 +851,8 @@ export default function ChatInterface() {
   };
 
   const fetchChatHistory = async (id) => {
+    setChatId(id);
+    console.log("Fetching chat history for chatId:", id);
     try {
       const response = await axiosInstance.get(`/chats/${id}/history/`);
       setMessages(response.data);
@@ -890,11 +899,11 @@ export default function ChatInterface() {
 
         console.log("Chat created:", chatResponse.data.chat_id);
         newChatId = chatResponse.data.chat_id;
-
-        await axiosInstance.post(`/chats/${newChatId}/history/`, {
-          message: "Please enter a title for this conversation?",
-          sender_type: "bot",
-        });
+        console.log(newChatId, "new chat id");
+        // await axiosInstance.post(`/chats/${newChatId}/history/`, {
+        //   message: "Please enter a title for this conversation?",
+        //   sender_type: "bot",
+        // });
 
         setChatId(newChatId);
         await axiosInstance.post(`/chats/${newChatId || chatId}/history/`, {
@@ -906,7 +915,7 @@ export default function ChatInterface() {
       }
 
       if (messages.length === 4) {
-        await axiosInstance.post(`/chats/${newChatId || chatId}/history/`, {
+        await axiosInstance.post(`/chats/${newChatId}/history/`, {
           message: "Please describe the topic you would like to discuss.",
           sender_type: "bot",
         });
@@ -1328,6 +1337,7 @@ export default function ChatInterface() {
                         <MettingOptions
                           fetchChatData={fetchChatHistory}
                           chatId={chatId}
+                          setTimeMettingShow={setTimeMettingShow}
                         />
                       </div>
                     )}

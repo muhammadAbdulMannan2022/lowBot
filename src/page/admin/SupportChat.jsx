@@ -32,6 +32,9 @@ export default function SupportChat() {
   const chatWs = useRef(null);
   const token = localStorage.getItem("token");
   useEffect(() => {
+    setChatId(route.id);
+  }, [route]);
+  useEffect(() => {
     // console.log(token);
     chatWs.current = new WebSocket(
       `ws://192.168.10.124:3100/ws/api/v1/chat/?Authorization=Bearer ${token}`
@@ -42,25 +45,28 @@ export default function SupportChat() {
 
     chatWs.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log(data.message);
       const receivedData = data.message;
-      const mess = {
-        id: receivedData.id,
-        message: receivedData.message,
-        attachment_name: receivedData.attachment_name || null,
-        attachment_data: receivedData.attachment_data || null,
-        sender: receivedData.sender,
-        receiver: receivedData.receiver,
-        reply_to: receivedData.reply_to,
-        timestamp: receivedData.timestamp,
-        is_read: receivedData.is_read,
-        is_deleted: receivedData.is_deleted,
-        is_edited: receivedData.is_edited,
-        is_reported: receivedData.is_reported,
-        sender_type: receivedData.sender_type || "user",
-      };
-      setMessages((prevMessage) => [...prevMessage, mess]);
-      console.log(data, messages);
+      if (data.main_chat_id === chatId) {
+        console.log(data.message);
+
+        const mess = {
+          id: receivedData.id || "",
+          message: receivedData.message,
+          attachment_name: receivedData.attachment_name || null,
+          attachment_data: receivedData.attachment_data || null,
+          sender: receivedData.sender,
+          receiver: receivedData.receiver,
+          reply_to: receivedData.reply_to,
+          timestamp: receivedData.timestamp,
+          is_read: receivedData.is_read,
+          is_deleted: receivedData.is_deleted,
+          is_edited: receivedData.is_edited,
+          is_reported: receivedData.is_reported,
+          sender_type: receivedData.sender_type || "user",
+        };
+        setMessages((prevMessage) => [...prevMessage, mess]);
+        console.log(data, messages);
+      }
     };
 
     chatWs.current.onerror = (err) => {
@@ -76,7 +82,7 @@ export default function SupportChat() {
         chatWs.current.close();
       }
     };
-  }, [token]);
+  }, [token, chatId]);
   //
   //
   //

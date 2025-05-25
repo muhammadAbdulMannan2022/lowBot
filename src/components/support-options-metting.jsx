@@ -1,7 +1,11 @@
 import { useState } from "react";
 import axiosInstance from "../component/axiosInstance";
 
-export default function MettingOptions({ fetchChatData, chatId }) {
+export default function MettingOptions({
+  fetchChatData,
+  chatId,
+  setTimeMettingShow,
+}) {
   // Function to format date and time
   const formatDateTime = (date) => {
     return `${date.toLocaleDateString("en-US", {
@@ -54,9 +58,14 @@ export default function MettingOptions({ fetchChatData, chatId }) {
       });
 
       fetchChatData(chatId);
+      setTimeMettingShow(false); // Hide the meeting options after scheduling
     } catch (error) {
       console.error("Error scheduling meeting:", error);
-      alert("An error occurred while scheduling the meeting.");
+      // alert("An error occurred while scheduling the meeting.");
+    } finally {
+      // Optionally, you can reset the state or perform any cleanup here
+      setTimeMettingShow(false);
+      console.log("Meeting scheduled for:", formattedDate, formattedTime);
     }
   };
 
