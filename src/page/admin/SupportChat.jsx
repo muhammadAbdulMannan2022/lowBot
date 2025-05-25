@@ -96,10 +96,13 @@ export default function SupportChat() {
       );
       setMessages([...response.data?.bot_messages, ...response.data?.messages]);
       console.log(response.data?.bot_messages);
-
+      const endpoint = isRequest
+        ? "/chats/help-desk/tickets/list/"
+        : "/chats/help_desk/running/list/";
+      const chat = await axiosInstance.get(endpoint);
       // const chat = await axiosInstance.get("/chats/help-desk/tickets/list/");
-      // const filter = chat.data.find((item) => item.chat_id === chat_id);
-      setSelectedChat(chat_id);
+      const filter = chat.data.find((item) => item.chat_id === chat_id);
+      setSelectedChat(filter);
       // setActiveFilter(filter.problem_level);
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -410,7 +413,7 @@ export default function SupportChat() {
                     </div>
 
                     {/* Support Request */}
-                    {!(selectedChat?.mentor?.length < 1) && (
+                    {!selectedChat?.mentor && (
                       <div className="p-4 border-b flex flex-col gap-4 justify-between items-center">
                         <span className="text-sm md:text-base">
                           Person giving you support request?
