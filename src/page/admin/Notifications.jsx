@@ -53,24 +53,25 @@ const Notifications = () => {
 
   return (
     <Sidebar>
-      <div className="h-[98vh] bg-gray-100 ml-2 py-12">
-        <h2 className="text-2xl font-semibold text-gray-800 text-center my-4">
+      <div className="h-[98vh] bg-gray-100 dark:bg-gray-900 ml-2 py-12 px-8">
+        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 text-center my-4">
           Notifications
         </h2>
-        <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-sm">
-          <div className="divide-y divide-gray-200">
+
+        <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {notifications.length > 0 ? (
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className="flex items-center justify-between p-4 hover:bg-gray-50"
+                  className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   <div>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
                       {notification.title}: {notification.message}
                       {notification.slug && (
                         <Link
-                          to={notification.slug} // Changed from href to to for react-router-dom
+                          to={notification.slug}
                           className="ml-1 text-blue-500 hover:underline"
                         >
                           click here
@@ -79,12 +80,12 @@ const Notifications = () => {
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
                       {getRelativeTime(notification.created_at)}
                     </span>
                     <button
                       onClick={() => handleDelete(notification.id)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
+                      className="text-gray-400 hover:text-red-500 transition-colors dark:hover:text-red-400"
                       aria-label={`Delete notification: ${notification.message}`}
                     >
                       <Trash2 size={18} />
@@ -93,7 +94,7 @@ const Notifications = () => {
                 </div>
               ))
             ) : (
-              <div className="p-4 text-center text-gray-500">
+              <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                 No notifications available.
               </div>
             )}

@@ -856,7 +856,7 @@ export default function ChatInterface() {
     try {
       const response = await axiosInstance.get(`/chats/${id}/history/`);
       setMessages(response.data);
-      console.log("response", response.data);
+      console.log("response of chat", response.data);
     } catch (error) {
       console.error("Error fetching chat history:", error);
       alert("An error occurred while fetching chat history.");
@@ -898,12 +898,12 @@ export default function ChatInterface() {
         });
 
         console.log("Chat created:", chatResponse.data.chat_id);
-        newChatId = chatResponse.data.chat_id;
+        newChatId = await chatResponse.data.chat_id;
         console.log(newChatId, "new chat id");
-        // await axiosInstance.post(`/chats/${newChatId}/history/`, {
-        //   message: "Please enter a title for this conversation?",
-        //   sender_type: "bot",
-        // });
+        await axiosInstance.post(`/chats/${newChatId || chatId}/history/`, {
+          message: "Please enter a title for this conversation?",
+          sender_type: "bot",
+        });
 
         setChatId(newChatId);
         await axiosInstance.post(`/chats/${newChatId || chatId}/history/`, {
@@ -915,7 +915,7 @@ export default function ChatInterface() {
       }
 
       if (messages.length === 4) {
-        await axiosInstance.post(`/chats/${newChatId}/history/`, {
+        await axiosInstance.post(`/chats/${newChatId || chatId}/history/`, {
           message: "Please describe the topic you would like to discuss.",
           sender_type: "bot",
         });
@@ -924,8 +924,8 @@ export default function ChatInterface() {
         message: message,
         sender_type: "user",
       });
-      await fetchChatHistory(chatId);
 
+      await fetchChatHistory(chatId);
       await fetchChatHistory(chatId || newChatId);
       setMessage("");
       setShowBotReply(true);
@@ -995,7 +995,7 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-white">
       <Button
         variant="ghost"
         className="fixed top-20 -left-3 z-0 md:hidden"
@@ -1010,7 +1010,7 @@ export default function ChatInterface() {
 
         {isChatHistoryOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-30 md:hidden"
+            className="fixed inset-0 bg-black/50 dark:bg-white/50 z-30 md:hidden"
             onClick={toggleChatHistory}
             aria-hidden="true"
           />
@@ -1018,12 +1018,12 @@ export default function ChatInterface() {
 
         <div
           className={cn(
-            "fixed inset-y-0 left-0 w-64 bg-white border-r md:z-0 z-40 transition-transform duration-300 ease-in-out md:static md:w-80 md:translate-x-0",
+            "fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-900 border-r dark:border-gray-600 md:z-0 z-40 transition-transform duration-300 ease-in-out md:static md:w-80 md:translate-x-0",
             isChatHistoryOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
           <div className="p-4 border-b">
-            <h2 className="text-md font-medium text-gray-700 mb-4">
+            <h2 className="text-md font-medium text-gray-700 dark:text-white mb-4">
               Chats History
             </h2>
             <Link
@@ -1048,7 +1048,7 @@ export default function ChatInterface() {
               className={cn(
                 "flex-1 py-2 text-center text-sm font-medium",
                 activeTab === "solved"
-                  ? "bg-blue-500 text-white"
+                  ? "bg-blue-500 text-white dark:bg-gray-800"
                   : "bg-gray-100 text-gray-600"
               )}
               onClick={() => setActiveTab("solved")}
@@ -1059,7 +1059,7 @@ export default function ChatInterface() {
               className={cn(
                 "flex-1 py-2 text-center text-sm font-medium",
                 activeTab === "unsolved"
-                  ? "bg-blue-500 text-white"
+                  ? "bg-blue-500 text-white dark:bg-gray-800"
                   : "bg-gray-100 text-gray-600"
               )}
               onClick={() => setActiveTab("unsolved")}
@@ -1079,7 +1079,7 @@ export default function ChatInterface() {
 
                 return (
                   <div key={date}>
-                    <h3 className="px-2 py-1 text-sm font-medium text-gray-500">
+                    <h3 className="px-2 py-1 text-sm font-medium text-gray-500 dark:text-white">
                       {date === "today" ? "Today" : "Yesterday"}
                     </h3>
                     {activeTab === "solved" && categories.solved.length > 0 && (
@@ -1088,14 +1088,20 @@ export default function ChatInterface() {
                           <div key={chat.chat_id}>
                             <div
                               className={`${
-                                chatId == chat.chat_id ? "bg-[#DCEBF9]" : ""
+                                chatId == chat.chat_id
+                                  ? "bg-blue-100 dark:bg-blue-900"
+                                  : "bg-white dark:bg-gray-800"
                               } p-2 border shadow-md rounded-md mb-2 flex justify-between items-center cursor-pointer`}
                               onClick={() =>
                                 navigation(`/chat/${chat.chat_id}`)
                               }
                             >
                               <span
-                                className="text-sm text-gray-700 truncate"
+                                className={`text-sm truncate ${
+                                  chatId == chat.chat_id
+                                    ? "text-gray-900 dark:text-white"
+                                    : "text-gray-700 dark:text-gray-200"
+                                }`}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   navigation(`/chat/${chat.chat_id}`);
@@ -1104,9 +1110,10 @@ export default function ChatInterface() {
                               >
                                 {chat.title}
                               </span>
+
                               {isExpanded == chat.chat_id ? (
                                 <Minus
-                                  className="h-4 w-4 text-gray-500 cursor-pointer"
+                                  className="h-4 w-4 text-gray-500 dark:text-gray-300 cursor-pointer"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setIsExpanded(false);
@@ -1114,7 +1121,7 @@ export default function ChatInterface() {
                                 />
                               ) : (
                                 <Plus
-                                  className="h-4 w-4 text-gray-500 cursor-pointer"
+                                  className="h-4 w-4 text-gray-500 dark:text-gray-300 cursor-pointer"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setIsExpanded(chat.chat_id);
@@ -1122,15 +1129,20 @@ export default function ChatInterface() {
                                 />
                               )}
                             </div>
+
                             {isExpanded == chat.chat_id && (
                               <div className="py-2 mb-1 flex items-center gap-2">
-                                <div className="bg-[#DCEBF9] shadow-md w-[50%] p-1 rounded-md flex items-center space-x-1 px-4 py-2">
-                                  <CgNotes sclassName="w-4 h-4" />
-                                  <span className="text-xs">Summary</span>
+                                <div className="bg-blue-100 dark:bg-blue-900 shadow-md w-[50%] p-1 rounded-md flex items-center space-x-1 px-4 py-2">
+                                  <CgNotes className="w-4 h-4 text-gray-700 dark:text-white" />
+                                  <span className="text-xs text-gray-800 dark:text-gray-200">
+                                    Summary
+                                  </span>
                                 </div>
-                                <div className="bg-[#DCEBF9] shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2">
-                                  <Video className="w-4 h-4 mr-1" />
-                                  <span className="text-xs">Watch video</span>
+                                <div className="bg-blue-100 dark:bg-blue-900 shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2">
+                                  <Video className="w-4 h-4 mr-1 text-gray-700 dark:text-white" />
+                                  <span className="text-xs text-gray-800 dark:text-gray-200">
+                                    Watch video
+                                  </span>
                                 </div>
                               </div>
                             )}
@@ -1138,6 +1150,7 @@ export default function ChatInterface() {
                         ))}
                       </div>
                     )}
+
                     {activeTab === "unsolved" &&
                       categories.unsolved.length > 0 && (
                         <div>
@@ -1145,14 +1158,20 @@ export default function ChatInterface() {
                             <div key={chat.chat_id}>
                               <div
                                 className={`${
-                                  chatId == chat.chat_id ? "bg-[#DCEBF9]" : ""
+                                  chatId == chat.chat_id
+                                    ? "bg-blue-100 dark:bg-blue-900"
+                                    : "bg-white dark:bg-gray-800"
                                 } p-2 border shadow-md rounded-md mb-2 flex justify-between items-center cursor-pointer`}
                                 onClick={() =>
                                   navigation(`/chat/${chat.chat_id}`)
                                 }
                               >
                                 <span
-                                  className="text-sm text-gray-700 truncate"
+                                  className={`text-sm truncate ${
+                                    chatId == chat.chat_id
+                                      ? "text-gray-900 dark:text-white"
+                                      : "text-gray-900 dark:text-gray-100"
+                                  }`}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     navigation(`/chat/${chat.chat_id}`);
@@ -1161,9 +1180,10 @@ export default function ChatInterface() {
                                 >
                                   {chat.title}
                                 </span>
+
                                 {isExpanded == chat.chat_id ? (
                                   <Minus
-                                    className="h-4 w-4 text-gray-500 cursor-pointer"
+                                    className="h-4 w-4 text-gray-500 dark:text-gray-300 cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setIsExpanded(false);
@@ -1171,7 +1191,7 @@ export default function ChatInterface() {
                                   />
                                 ) : (
                                   <Plus
-                                    className="h-4 w-4 text-gray-500 cursor-pointer"
+                                    className="h-4 w-4 text-gray-500 dark:text-gray-300 cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setIsExpanded(chat.chat_id);
@@ -1179,16 +1199,20 @@ export default function ChatInterface() {
                                   />
                                 )}
                               </div>
+
                               {isExpanded == chat.chat_id && (
                                 <div className="py-2 mb-1 flex items-center gap-2 cursor-pointer">
-                                  <div className="bg-[#DCEBF9]  shadow-md w-[50%] p-1 rounded-md flex space-x-1 items-center px-4 py-2">
-                                    <CgNotes sclassName="w-4 h-4" />
-
-                                    <span className="text-xs">Summary</span>
+                                  <div className="bg-blue-100 dark:bg-blue-900 shadow-md w-[50%] p-1 rounded-md flex space-x-1 items-center px-4 py-2">
+                                    <CgNotes className="w-4 h-4 text-gray-700 dark:text-white" />
+                                    <span className="text-xs text-gray-800 dark:text-gray-200">
+                                      Summary
+                                    </span>
                                   </div>
-                                  <div className="bg-[#DCEBF9] shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2">
-                                    <Video className="w-4 h-4 mr-1" />
-                                    <span className="text-xs">Watch video</span>
+                                  <div className="bg-blue-100 dark:bg-blue-900 shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2">
+                                    <Video className="w-4 h-4 mr-1 text-gray-700 dark:text-white" />
+                                    <span className="text-xs text-gray-800 dark:text-gray-200">
+                                      Watch video
+                                    </span>
                                   </div>
                                 </div>
                               )}
@@ -1203,7 +1227,7 @@ export default function ChatInterface() {
           </div>
         </div>
 
-        <div className="flex-1 relative flex flex-col bg-white md:pl-[2rem]">
+        <div className="flex-1 relative flex flex-col bg-white dark:bg-gray-900 md:pl-[2rem]">
           {messages[0]?.chat?.status === "UNSOLVED" && (
             <div className="p-3 absolute top-3 right-2 flex justify-end">
               <Button
@@ -1225,7 +1249,7 @@ export default function ChatInterface() {
                 {messages.length === 0 && (
                   <div className="max-w-md mx-auto text-center pt-20">
                     <h2 className="text-md font-medium">Hi, There!</h2>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-400">
                       Please enter a title for this conversation?
                     </p>
                   </div>
@@ -1243,20 +1267,20 @@ export default function ChatInterface() {
                         }`}
                       >
                         {msg.sender_type === "bot" ? (
-                          <div className="bg-blue-100 p-3 rounded-lg max-w-sm">
-                            <span className="text-sm text-gray-800">
+                          <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg max-w-sm">
+                            <span className="text-sm text-gray-800 dark:text-white">
                               {msg.message}
                             </span>
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               Bot
                             </div>
                           </div>
                         ) : (
-                          <div className="bg-gray-100 p-3 rounded-lg max-w-sm">
-                            <span className="text-sm text-gray-800">
+                          <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg max-w-sm">
+                            <span className="text-sm text-gray-800 dark:text-white">
                               {msg.message}
                             </span>
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               {msg.sender_type === "user"
                                 ? "You"
                                 : msg.sender_type === "mentor"
@@ -1272,7 +1296,7 @@ export default function ChatInterface() {
                     {messages.length === 2 && (
                       <div className="flex flex-col gap-4">
                         <div className="flex flex-col items-center justify-center">
-                          <p className="text-gray-700 mb-2">
+                          <p className="text-gray-700 dark:text-gray-300 mb-2">
                             Please choose the appropriate priority level.
                           </p>
                           <div className="flex gap-2 flex-wrap justify-center">
@@ -1301,24 +1325,27 @@ export default function ChatInterface() {
                         </div>
                       </div>
                     )}
+
                     {messages.length === 4 && (
                       <div className="flex flex-col gap-4">
                         <div className="flex flex-col items-center justify-center">
-                          <p className="text-gray-700 mb-2">
+                          <p className="text-gray-700 dark:text-gray-300 mb-2">
                             Please describe the topic you would like to discuss.
                           </p>
                         </div>
                       </div>
                     )}
+
                     {messages[0]?.chat.is_finding && (
-                      <div className="flex flex-col items-center justify-center bg-slate-100 p-2 rounded-md">
-                        <p className="text-gray-700 mb-2 text-center">
+                      <div className="flex flex-col items-center justify-center bg-slate-100 dark:bg-gray-800 p-2 rounded-md">
+                        <p className="text-gray-700 dark:text-gray-300 mb-2 text-center">
                           Checking for available mentor's to support you. Please
-                          Wait for a moment or continue chating with your Ai
+                          wait for a moment or continue chatting with your AI
                           Mentor. Mentor will message you soon.
                         </p>
                       </div>
                     )}
+
                     {messages.length === 7 &&
                       !timeMettingShow &&
                       messages[0].chat.is_finding === false &&
@@ -1341,13 +1368,14 @@ export default function ChatInterface() {
                         />
                       </div>
                     )}
+
                     {messages[0].chat?.meetings.length === 1 && (
-                      <div className="flex flex-col gap-4 bg-[#EAF3FB] py-2 px-2 rounded-md">
-                        <p className="text-gray-700 mb-2 text-center">
+                      <div className="flex flex-col gap-4 bg-[#EAF3FB] dark:bg-gray-800 py-2 px-2 rounded-md">
+                        <p className="text-gray-700 dark:text-gray-300 mb-2 text-center">
                           A meeting has been scheduled with our expert to
                           discuss your concerns. Please be available on 16 July,
-                          2025. at 2:30AM via Zoom. Meeting link we be available
-                          in meeting section.
+                          2025 at 2:30AM via Zoom. Meeting link will be
+                          available in the meeting section.
                         </p>
                       </div>
                     )}
@@ -1366,28 +1394,35 @@ export default function ChatInterface() {
               onClick={() => setVideoActive(true)}
               className="cursor-pointer h-10 w-10"
             />
-            <div className="px-2 py-2 border-t bg-[#E9ECF3] w-full max-w-6xl rounded-3xl flex items-center gap-2">
-              <Paperclip size={23} className="text-gray-500" />
-              <div className="bg-white w-full rounded-3xl px-4 flex items-center justify-between">
+
+            <div className="px-2 py-2 border-t dark:border-gray-600 bg-[#E9ECF3] dark:bg-gray-800 w-full max-w-6xl rounded-3xl flex items-center gap-2">
+              <Paperclip
+                size={23}
+                className="text-gray-500 dark:text-gray-300"
+              />
+
+              <div className="bg-white dark:bg-gray-900 w-full rounded-3xl px-4 flex items-center justify-between">
                 <input
                   ref={inputRef}
                   placeholder="Start chat"
-                  className="flex h-10 w-full border border-input bg-background px-3 py-2 text-sm md:text-base file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 border-none outline-none rounded-3xl"
+                  className="flex h-10 w-full border-none bg-transparent px-3 py-2 text-sm md:text-base placeholder:text-muted-foreground dark:placeholder:text-gray-400 text-gray-800 dark:text-white outline-none rounded-3xl"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
                 />
+
                 <div className="flex items-center gap-2">
                   <FiMic
                     size={20}
-                    className="text-gray-500 cursor-pointer"
+                    className="text-gray-500 dark:text-gray-300 cursor-pointer"
                     onClick={() => setVoiceActive(!voiceActive)}
                   />
                   <img src={voice} alt="Voice icon" className="h-5 w-5" />
                 </div>
               </div>
+
               <button onClick={handleSendMessage} disabled={isLoading}>
-                <Send size={20} className="text-gray-500" />
+                <Send size={20} className="text-gray-500 dark:text-gray-300" />
               </button>
             </div>
           </div>

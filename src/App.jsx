@@ -24,13 +24,50 @@ import UserNotifications from "./page/user/UserNotifications";
 import wsManager from "./socket/socket";
 
 function App() {
+  const [theme, setTheme] = useState("system");
   const chatWs = useRef(null);
   const token = localStorage.getItem("token");
 
   const handleMessage = (m) => {
     console.log("Chat message received:", m);
   };
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
 
+    if (savedTheme === "dark") {
+      document.documentElement.classList.add("dark");
+      setTheme("dark");
+    } else if (savedTheme === "light") {
+      document.documentElement.classList.remove("dark");
+      setTheme("light");
+    } else {
+      // system preference
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+      if (prefersDark) {
+        document.documentElement.classList.add("dark");
+        setTheme("system");
+      } else {
+        document.documentElement.classList.remove("dark");
+        setTheme("system");
+      }
+    }
+  }, [theme]);
+  const toggleTheme = () => {
+    const root = document.documentElement;
+    const isDark = root.classList.contains("dark");
+
+    if (isDark) {
+      root.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+      setTheme("light");
+    } else {
+      root.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+      setTheme("dark");
+    }
+  };
   useEffect(() => {
     if (!token) return;
 
