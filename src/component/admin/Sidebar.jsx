@@ -34,7 +34,39 @@ const Sidebar = ({
   const [sideBarDropDown, setSideBarDropDown] = useState(false);
   const role = localStorage.getItem("role");
   const [profileVisible, setProfileVisible] = useState(false);
+  // theme toggles
+  const [theme, setTheme] = useState("system");
+  const [isDark, setIsDark] = useState(false); // ⬅️ Added this
+  // theme toggle function
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
 
+    let activeTheme = savedTheme || (prefersDark ? "dark" : "light");
+    setTheme(activeTheme);
+
+    if (activeTheme === "dark") {
+      document.documentElement.classList.add("dark");
+      setIsDark(true); // ⬅️ Set dark mode state
+    } else {
+      document.documentElement.classList.remove("dark");
+      setIsDark(false); // ⬅️ Set light mode state
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
   const { logout } = useAuth();
   const navigate = useNavigate();
   const handleprofile = () => {
@@ -92,32 +124,44 @@ const Sidebar = ({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <nav className=" border-t-[20px] border-[#C3DAEF] fixed top-0 z-50 w-full bg-white shadow">
+      <nav className=" border-t-[20px] border-[#C3DAEF] fixed top-0 z-50 w-full bg-white shadow dark:bg-gray-900">
         <div className=" relative px-3 py-3 lg:px-5 lg:pl-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
+            {/* Dark Mode Toggle */}
+            <div className="flex flex-row-reverse items-center justify-center gap-3">
               <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                aria-controls="logo-sidebar"
-                type="button"
-                className="inline-flex items-center p-2 text-sm  rounded-lg md:hidden focus:text-white  hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-[rgba(201, 160, 56, 0.3)] 0  "
+                onClick={toggleTheme}
+                className="mr-4 w-12 h-5 flex items-center rounded-full bg-blue-600 dark:bg-blue-800 p-1 transition-colors duration-300"
               >
-                <span className="sr-only">Open sidebar</span>
-                <svg
-                  className="w-6 h-6"
-                  aria-hidden="true"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    clipRule="evenodd"
-                    fillRule="evenodd"
-                    d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"
-                  />
-                </svg>
+                <div
+                  className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${
+                    isDark ? "translate-x-6" : "translate-x-0"
+                  }`}
+                />
               </button>
-              {/* <Link to="/" className="flex ms-2 md:me-24">
+              <div className="flex items-center">
+                <button
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  aria-controls="logo-sidebar"
+                  type="button"
+                  className="inline-flex items-center p-2 text-sm  rounded-lg md:hidden focus:text-white  hover:bg-blue-900 dark:text-white dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[rgba(201, 160, 56, 0.3)] 0  "
+                >
+                  <span className="sr-only">Open sidebar</span>
+                  <svg
+                    className="w-6 h-6"
+                    aria-hidden="true"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      clipRule="evenodd"
+                      fillRule="evenodd"
+                      d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"
+                    />
+                  </svg>
+                </button>
+                {/* <Link to="/" className="flex ms-2 md:me-24">
 								<img
 									className="h-[80px] w-[80px] object-cover cursor-pointer"
 									src={
@@ -132,6 +176,7 @@ const Sidebar = ({
 									alt="Logo"
 								/>
 							</Link> */}
+              </div>
             </div>
             <div className="text-xl">{title}</div>
             <div className="flex items-center">
@@ -141,25 +186,29 @@ const Sidebar = ({
                     <button
                       ref={buttonRef}
                       type="button"
-                      className="flex cursor-pointer text-sm  rounded-full  "
+                      className="flex cursor-pointer text-sm rounded-full"
                       aria-expanded={isDropdownOpen}
-                      onClick={() => {
-                        setProfileVisible(!profileVisible);
-                      }}
+                      onClick={() => setProfileVisible(!profileVisible)}
                     >
-                      <div className="rounded-full w-8 h-8 aspect-square object-cover  border flex items-center justify-center text-xl uppercase  ">
-                        <FaUserCircle size={28} color="black" />
+                      <div className="rounded-full w-8 h-8 aspect-square object-cover border flex items-center justify-center text-xl uppercase bg-gray-200 dark:bg-gray-700">
+                        <FaUserCircle
+                          size={28}
+                          className="text-black dark:text-white"
+                        />
                       </div>
                     </button>
-                    <h3>Ibrahim Khalil</h3>
+                    <h3 className="text-gray-800 dark:text-white">
+                      Ibrahim Khalil
+                    </h3>
                   </div>
+
                   {isDropdownOpen && (
                     <div
                       ref={dropdownRef}
-                      className="w-[calc(100vw-48px)] sm:!w-[343px] fixed sm:!absolute bg-white top-[55px] right-0 smx:-right-4 left-4 sm:left-[-308px] rounded-lg overflow-hidden z-[15] shadow-[rgba(50,50,93,0.25)_0px_13px_27px_-5px,rgba(0,0,0,0.3)0px_8px_16px_-8px]"
+                      className="w-[calc(100vw-48px)] sm:!w-[343px] fixed sm:!absolute bg-white dark:bg-gray-900 top-[55px] right-0 smx:-right-4 left-4 sm:left-[-308px] rounded-lg overflow-hidden z-[15] shadow-lg"
                     >
                       <div className="w-full p-2 flex flex-col justify-center items-center gap-2">
-                        <div className="p-2 flex items-center gap-2 self-stretch rounded-lg  shadow-[0px_1px_1px_0px_rgba(0,0,0,0.12)]">
+                        <div className="p-2 flex items-center gap-2 self-stretch rounded-lg bg-gray-50 dark:bg-gray-800 shadow">
                           <div className="rounded-full w-12 h-12 relative overflow-hidden">
                             <div className="rounded-full aspect-square object-cover w-full border flex items-center justify-center text-xl uppercase text-white bg-blue-600">
                               M
@@ -167,11 +216,11 @@ const Sidebar = ({
                           </div>
                           <div className="flex flex-col justify-center items-start gap-0.5 flex-1">
                             <div className="flex gap-1 items-center">
-                              <p className="text-subtitle-s1 text-t_color">
+                              <p className="text-gray-800 dark:text-gray-100 font-medium">
                                 Md Ibrahim Khalil
                               </p>
                             </div>
-                            <p className="text-body-b2 text-t_color">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
                               mdibrahimkhalil516@gmail.com
                             </p>
                           </div>
@@ -180,10 +229,9 @@ const Sidebar = ({
                         <div className="flex items-center justify-center gap-2 self-stretch">
                           <button
                             type="button"
-                            className="btn uppercase font-semibold text-[#101828] bg-[#EAECF0] hover:bg-[#D0D5DD] active:bg-[#98A2B3]"
+                            className="uppercase font-semibold bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 transition-colors"
                             style={{
                               borderRadius: "5px",
-                              color: "inherit",
                               height: "40px",
                               padding: "8px 24px",
                               fontSize: "14px",
@@ -191,28 +239,21 @@ const Sidebar = ({
                             onClick={handleprofile}
                           >
                             <div className="flex justify-center items-center gap-2">
-                              <div className="flex justify-center items-center">
-                                <img
-                                  src="https://cdn.ostad.app/public/icons/account-circle-line.svg"
-                                  style={{
-                                    width: "19px",
-                                    minWidth: "19px",
-                                    height: "19px",
-                                    minHeight: "19px",
-                                  }}
-                                  alt="Profile"
-                                />
-                              </div>
-                              <p className="whitespace-nowrap ">profile</p>
+                              <img
+                                src="https://cdn.ostad.app/public/icons/account-circle-line.svg"
+                                className="w-[19px] h-[19px] dark:invert"
+                                alt="Profile"
+                              />
+                              <p className="whitespace-nowrap">Profile</p>
                             </div>
                           </button>
+
                           <button
                             type="button"
                             onClick={() => setIsVisble(!isVisible)}
-                            className="btn uppercase font-semibold text-[#101828] bg-[#EAECF0] hover:bg-[#D0D5DD] active:bg-[#98A2B3]"
+                            className="uppercase font-semibold bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 transition-colors"
                             style={{
                               borderRadius: "5px",
-                              color: "inherit",
                               height: "40px",
                               padding: "8px 24px",
                               fontSize: "14px",
@@ -220,18 +261,11 @@ const Sidebar = ({
                           >
                             <div className="flex justify-center items-center gap-2">
                               <p className="whitespace-nowrap">Logout</p>
-                              <div className="flex justify-center items-center">
-                                <img
-                                  src="https://cdn.ostad.app/public/icons/logout-box-r-line.svg"
-                                  style={{
-                                    width: "19px",
-                                    minWidth: "19px",
-                                    height: "19px",
-                                    minHeight: "19px",
-                                  }}
-                                  alt="Logout"
-                                />
-                              </div>
+                              <img
+                                src="https://cdn.ostad.app/public/icons/logout-box-r-line.svg"
+                                className="w-[19px] h-[19px] dark:invert"
+                                alt="Logout"
+                              />
                             </div>
                           </button>
                         </div>
@@ -250,11 +284,11 @@ const Sidebar = ({
         id="logo-sidebar"
         className={`fixed shadow-md top-0 left-0 z-40 w-[246px] h-full pt-16 transition-transform ${
           isSidebarOpen ? "" : "-translate-x-full"
-        }   sm:translate-x-0 bg-gradient-to-b from-white to-[#DCEBF9]`}
+        } sm:translate-x-0 bg-gradient-to-b from-white to-[#DCEBF9] dark:from-gray-900 dark:to-gray-800`}
         aria-label="Sidebar"
       >
-        <div className="h-full px-3 mt-4 pb-4 overflow-y-auto  bg-gradient-to-b from-white to-[#DCEBF9]">
-          <div className="p-4 border-b">
+        <div className="h-full px-3 mt-4 pb-4 overflow-y-auto bg-gradient-to-b from-white to-[#DCEBF9] dark:from-gray-900 dark:to-gray-800">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex justify-center mb-4">
               <img
                 src={Logo}
@@ -265,18 +299,21 @@ const Sidebar = ({
               />
             </div>
             <div className="text-center">
-              <h2 className="font-medium text-lg">
+              <h2 className="font-medium text-lg text-gray-900 dark:text-gray-100">
                 {userName}{" "}
                 <span
-                  className="text-gray-400 text-xs cursor-pointer hover:underline"
+                  className="text-gray-400 text-xs cursor-pointer hover:underline dark:text-gray-300"
                   onClick={() => navigate("/profile")}
                 >
                   Edit
                 </span>
               </h2>
-              <p className="text-sm text-gray-500">{userType}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {userType}
+              </p>
             </div>
           </div>
+
           <ul className="space-y-2 font-medium mt-10">
             <li>
               <Link
@@ -284,14 +321,11 @@ const Sidebar = ({
                 className={`flex items-center p-2 rounded-lg group ${
                   location.pathname === "/supportchat"
                     ? "bg-[#163B76] text-white"
-                    : "text-t_color hover:bg-blue-900 hover:text-white"
+                    : "text-gray-800 dark:text-gray-200 hover:bg-blue-900 hover:text-white"
                 }`}
               >
-                <HiChatBubbleLeftRight
-                  size={25}
-                  className="transition duration-75 group-hover:text-t_color"
-                />
-                <span className="ms-3 text-t_color">Chats</span>
+                <HiChatBubbleLeftRight size={25} />
+                <span className="ms-3">Chats</span>
               </Link>
             </li>
 
@@ -301,14 +335,11 @@ const Sidebar = ({
                 className={`flex items-center p-2 rounded-lg group ${
                   location.pathname === "/dashboard"
                     ? "bg-[#163B76] text-white"
-                    : "text-t_color hover:bg-blue-900 hover:text-white"
+                    : "text-gray-800 dark:text-gray-200 hover:bg-blue-900 hover:text-white"
                 }`}
               >
-                <FaUsers
-                  size={25}
-                  className="transition duration-75 group-hover:text-t_color"
-                />
-                <span className="ms-3 text-t_color">User Management</span>
+                <FaUsers size={25} />
+                <span className="ms-3">User Management</span>
               </Link>
             </li>
 
@@ -318,59 +349,49 @@ const Sidebar = ({
                 className={`flex items-center p-2 rounded-lg group ${
                   location.pathname === "/notification"
                     ? "bg-[#163B76] text-white"
-                    : " hover:bg-blue-900 hover:text-white"
+                    : "text-gray-800 dark:text-gray-200 hover:bg-blue-900 hover:text-white"
                 }`}
               >
-                <IoNotificationsOutline
-                  size={25}
-                  className="transition duration-75 group-hover:text-t_color"
-                />
-                <span className="ms-3 text-t_color">Notifications</span>
+                <IoNotificationsOutline size={25} />
+                <span className="ms-3">Notifications</span>
               </Link>
             </li>
+
             <li>
               <Link
                 to="/mettings"
                 className={`flex items-center p-2 rounded-lg group ${
                   location.pathname === "/mettings"
                     ? "bg-[#163B76] text-white"
-                    : "text-t_color hover:bg-blue-900 hover:text-white"
+                    : "text-gray-800 dark:text-gray-200 hover:bg-blue-900 hover:text-white"
                 }`}
               >
-                <IoMdContacts
-                  size={25}
-                  className="transition duration-75 group-hover:text-t_color"
-                />
-                <span className="ms-3 text-t_color">Mettings</span>
+                <IoMdContacts size={25} />
+                <span className="ms-3">Mettings</span>
               </Link>
             </li>
+
             <li>
               <Link
                 to="/profile"
                 className={`flex items-center p-2 rounded-lg group ${
                   location.pathname === "/profile"
                     ? "bg-[#163B76] text-white"
-                    : "text-t_color hover:bg-blue-900 hover:text-white"
+                    : "text-gray-800 dark:text-gray-200 hover:bg-blue-900 hover:text-white"
                 }`}
               >
-                <FaRegUser
-                  size={20}
-                  className="transition duration-75 group-hover:text-t_color"
-                />
-                <span className="ms-3 text-t_color">Profile</span>
+                <FaRegUser size={20} />
+                <span className="ms-3">Profile</span>
               </Link>
             </li>
 
             <li className="absolute bottom-10 w-[85%]">
               <button
                 onClick={() => setIsVisble(!isVisible)}
-                className="w-full justify-start flex items-center gap-2 py-2 px-2 bg-[#C3DAEF] text-gray-700 hover:bg-blue-100"
+                className="w-full justify-start flex items-center gap-2 py-2 px-2 bg-[#C3DAEF] dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-blue-100 dark:hover:bg-gray-600"
               >
-                <MdLogout
-                  size={25}
-                  className="transition duration-75 group-hover:text-t_color"
-                />
-                <span className="ms-3 text-t_color">Logout</span>
+                <MdLogout size={25} />
+                <span className="ms-3">Logout</span>
               </button>
             </li>
           </ul>

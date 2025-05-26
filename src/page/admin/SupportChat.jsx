@@ -246,9 +246,9 @@ export default function SupportChat() {
 
   // console.logf('chat.is_finding', selectedChat);
   return (
-    <div className="flex flex-col h-screen bg-[#f0f7ff]">
+    <div className="flex flex-col h-screen bg-[#f0f7ff] dark:bg-gray-900">
       <Sidebar>
-        <div className="mt-10 rounded-lg bg-gray-50 p-4 md:p-6">
+        <div className="mt-10 rounded-lg bg-gray-50 dark:bg-gray-800 p-4 md:p-6">
           <div className="flex items-center gap-4">
             <img
               src={ChatSideBaIcon}
@@ -256,10 +256,11 @@ export default function SupportChat() {
               className="h-10 w-10 md:hidden"
               onClick={toggleUserList}
             />
-            <h1 className="text-xl font-semibold py-4">Messages</h1>
+            <h1 className="text-xl font-semibold py-4 text-gray-900 dark:text-white">
+              Messages
+            </h1>
           </div>
-          <div className="flex bg-white rounded-md border relative">
-            {/* Overlay for User List on Mobile */}
+          <div className="flex bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 relative">
             {isUserListOpen && (
               <div
                 className="fixed inset-0 bg-black/50 z-50 md:hidden"
@@ -268,21 +269,19 @@ export default function SupportChat() {
               />
             )}
 
-            {/* User List Sidebar */}
             <div
-              className={`fixed inset-y-0 left-0 w-64 bg-white border-r z-50 md:z-0 transition-transform duration-300 ease-in-out md:static md:w-80 md:translate-x-0 ${
+              className={`fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 border-r dark:border-gray-700 z-50 md:z-0 transition-transform duration-300 ease-in-out md:static md:w-80 md:translate-x-0 ${
                 isUserListOpen ? "translate-x-0" : "-translate-x-full"
               }`}
             >
-              <div className="p-4 border-b">
-                {/* toggle old and new */}
+              <div className="p-4 border-b dark:border-gray-700">
                 <div className="flex items-center justify-center rounded-lg overflow-hidden mb-4">
                   <button
                     onClick={handleRToggle}
                     className={`px-4 py-2 text-sm font-medium transition-colors duration-200 rounded ${
                       isRequest
                         ? "bg-blue-500 text-white"
-                        : "bg-gray-200 text-gray-700"
+                        : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200"
                     }`}
                   >
                     Request
@@ -292,22 +291,23 @@ export default function SupportChat() {
                     className={`px-4 py-2 text-sm font-medium transition-colors duration-200 rounded ${
                       !isRequest
                         ? "bg-blue-500 text-white"
-                        : "bg-gray-200 text-gray-700"
+                        : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200"
                     }`}
                   >
                     Running
                   </button>
                 </div>
                 <div className="flex gap-4">
-                  <div className="relative border rounded-md w-full">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <div className="relative border rounded-md dark:border-gray-700 w-full">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 h-4 w-4" />
                     <Input
                       placeholder="Search name"
-                      className="pl-9 bg-white w-full"
+                      className="pl-9 bg-white dark:bg-gray-800 text-gray-900 dark:text-white w-full"
                       aria-label="Search users"
                     />
                   </div>
                 </div>
+
                 {isRequest && (
                   <div className="mt-4">
                     <Tabs
@@ -316,51 +316,35 @@ export default function SupportChat() {
                       onValueChange={setActiveFilter}
                     >
                       <TabsList className="grid grid-cols-3 w-full">
-                        <TabsTrigger
-                          value="critical"
-                          className={
-                            activeFilter.toLowerCase() === "critical"
-                              ? "bg-blue-500 text-white"
-                              : ""
-                          }
-                          aria-label="Filter by critical priority"
-                        >
-                          Critical
-                        </TabsTrigger>
-                        <TabsTrigger
-                          className={
-                            activeFilter.toLowerCase() == "medium"
-                              ? "bg-blue-500 text-white"
-                              : ""
-                          }
-                          value="medium"
-                          aria-label="Filter by medium priority"
-                        >
-                          Medium
-                        </TabsTrigger>
-                        <TabsTrigger
-                          className={
-                            activeFilter.toLowerCase() === "general"
-                              ? "bg-blue-500 text-white"
-                              : ""
-                          }
-                          value="general"
-                          aria-label="Filter by general priority"
-                        >
-                          General
-                        </TabsTrigger>
+                        {["critical", "medium", "general"].map((val) => (
+                          <TabsTrigger
+                            key={val}
+                            value={val}
+                            className={`${
+                              activeFilter.toLowerCase() === val
+                                ? "bg-blue-500 text-white"
+                                : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                            }`}
+                            aria-label={`Filter by ${val} priority`}
+                          >
+                            {val.charAt(0).toUpperCase() + val.slice(1)}
+                          </TabsTrigger>
+                        ))}
                       </TabsList>
                     </Tabs>
                   </div>
                 )}
               </div>
+
               <div className="overflow-y-auto md:h-[calc(100vh-25rem)] h-[calc(100vh-14rem)]">
                 {filteredChats.map((chat) => (
                   <Link
                     to={`/supportchat/${chat.chat_id}`}
                     key={chat.chat_id}
-                    className={`flex items-center gap-3 p-4 hover:bg-gray-100 cursor-pointer border-b ${
-                      chatId === chat.chat_id ? "bg-gray-200" : ""
+                    className={`flex items-center gap-3 p-4 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-700 ${
+                      chatId === chat.chat_id
+                        ? "bg-gray-200 dark:bg-gray-700"
+                        : ""
                     }`}
                   >
                     <Avatar>
@@ -373,25 +357,21 @@ export default function SupportChat() {
                         className="h-10 w-10 rounded-full"
                       />
                     </Avatar>
-                    <span className="text-sm md:text-base">
+                    <span className="text-sm md:text-base text-gray-900 dark:text-white">
                       {chat?.user?.user_profile?.first_name ||
                         chat?.username ||
                         "Unknown User"}
                     </span>
                   </Link>
                 ))}
-                {console.log(chats)}
               </div>
             </div>
 
-            {/* Main Chat Area */}
             <div className="flex-1 flex flex-col">
               <div className="overflow-y-auto md:h-[70vh]">
-                {/* {console.log(selectedChat)} */}
                 {selectedChat ? (
                   <>
-                    {/* Chat Header */}
-                    <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b gap-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b dark:border-gray-700 gap-4">
                       <div className="flex items-center gap-3">
                         <Avatar>
                           <img
@@ -403,25 +383,24 @@ export default function SupportChat() {
                             className="h-10 w-10 rounded-full"
                           />
                         </Avatar>
-                        <span className="text-sm md:text-base">
+                        <span className="text-sm md:text-base text-gray-900 dark:text-white">
                           {selectedChat.user?.user_profile?.first_name ||
                             "Unknown User"}
                         </span>
                       </div>
                       {selectedChat.status === "UNSOLVED" && (
                         <Button
-                          onClick={() => handleMark()}
+                          onClick={handleMark}
                           variant="outline"
                           className="bg-blue-500 text-white hover:bg-blue-600 w-full sm:w-auto"
                           aria-label="Mark as solved"
                         >
-                          Mark as Sloved
+                          Mark as Solved
                         </Button>
                       )}
                     </div>
 
-                    {/* Chat Details */}
-                    <div className="p-4 border-b bg-slate-100 px-4 py-2 ">
+                    <div className="p-4 border-b dark:border-gray-700 bg-slate-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
                       <div className="mb-2">
                         <span className="font-medium text-sm md:text-base">
                           Title:
@@ -434,22 +413,21 @@ export default function SupportChat() {
                         </span>
                         <Badge
                           variant="outline"
-                          className="bg-blue-500 text-white"
+                          className="bg-blue-500 text-white dark:text-white"
                         >
                           {selectedChat?.problem_level}
                         </Badge>
                       </div>
-                      <p className="mt-2 text-gray-700 text-sm md:text-base">
+                      <p className="mt-2 text-sm md:text-base">
                         {selectedChat.description ||
                           messages[5]?.message ||
                           "No description provided."}
                       </p>
                     </div>
 
-                    {/* Support Request */}
                     {!selectedChat?.mentor && (
-                      <div className="p-4 border-b flex flex-col gap-4 justify-between items-center">
-                        <span className="text-sm md:text-base">
+                      <div className="p-4 border-b dark:border-gray-700 flex flex-col gap-4 justify-between items-center">
+                        <span className="text-sm md:text-base text-gray-900 dark:text-white">
                           Person giving you support request?
                         </span>
                         <div className="flex gap-2 flex-wrap justify-center">
@@ -470,7 +448,6 @@ export default function SupportChat() {
                       </div>
                     )}
 
-                    {/* Chat Messages */}
                     <div
                       className="flex-1 overflow-y-auto p-4 space-y-4"
                       style={{ paddingBottom: "80px" }}
@@ -498,8 +475,8 @@ export default function SupportChat() {
                           <div
                             className={`max-w-[70%] p-3 rounded-lg ${
                               msg.sender_type === "mentor"
-                                ? "bg-[#EAF3FB] text-gray-800"
-                                : "bg-white border text-gray-800"
+                                ? "bg-[#EAF3FB] dark:bg-blue-900 text-gray-800 dark:text-white"
+                                : "bg-white dark:bg-gray-700 border dark:border-gray-600 text-gray-800 dark:text-gray-100"
                             }`}
                           >
                             <p className="text-sm md:text-base">
@@ -512,7 +489,7 @@ export default function SupportChat() {
                     </div>
                   </>
                 ) : (
-                  <div className="flex items-center justify-center min-h-[60vh] text-center text-gray-500">
+                  <div className="flex items-center justify-center min-h-[60vh] text-center text-gray-500 dark:text-gray-300">
                     <div className="p-4 text-lg">
                       Select a chat to start messaging.
                     </div>
@@ -520,21 +497,19 @@ export default function SupportChat() {
                 )}
               </div>
 
-              {/* Fixed Chat Input */}
               {selectedChat && (
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex items-center justify-center gap-2 md:static md:bg-transparent md:border-t-0 md:p-4 z-20">
+                <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 p-4 flex items-center justify-center gap-2 md:static md:bg-transparent md:border-t-0 md:p-4 z-20">
                   <img
                     src={videoMic}
                     alt="Video icon"
                     className="cursor-pointer h-10 w-10"
                   />
-                  <div className="px-2 py-2 bg-[#E9ECF3] w-full max-w-5xl rounded-3xl flex items-center gap-2">
+                  <div className="px-2 py-2 bg-[#E9ECF3] dark:bg-gray-700 w-full max-w-5xl rounded-3xl flex items-center gap-2">
                     <Paperclip size={20} className="text-gray-500" />
-                    <div className="bg-white w-full rounded-3xl px-4 flex items-center justify-between">
+                    <div className="bg-white dark:bg-gray-800 w-full rounded-3xl px-4 flex items-center justify-between">
                       <input
                         placeholder="Start chat"
-                        // className="border-none focus-visible: outline-none rounded-3xl text-sm md:text-base"
-                        className="flex h-10 w-full border border-input bg-background px-3 py-2  file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground  disabled:cursor-not-allowed disabled:opacity-50 border-none outline-none rounded-3xl text-sm md:text-base"
+                        className="flex h-10 w-full bg-background dark:bg-gray-800 text-black dark:text-white placeholder:text-muted-foreground dark:placeholder-gray-400 border-none outline-none rounded-3xl text-sm md:text-base"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyDown={(e) =>
