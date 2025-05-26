@@ -934,15 +934,15 @@ export default function ChatInterface() {
           message: message,
           sender_type: "user",
         });
+        await fetchChatHistory(chatId);
+        await fetchChatHistory(chatId || newChatId);
       }
 
-      // await fetchChatHistory(chatId);
-      // await fetchChatHistory(chatId || newChatId);
       setMessage("");
       setShowBotReply(true);
     } catch (error) {
       console.error("Error creating chat:", error);
-      alert("An error occurred while creating the chat.");
+      // alert("An error occurred while creating the chat.");
     } finally {
       setIsLoading(false);
     }
@@ -1396,7 +1396,13 @@ export default function ChatInterface() {
             </div>
           )}
 
-          {voiceActive && <VoiceInput setActive={setVoiceActive} />}
+          {voiceActive && (
+            <VoiceInput
+              setMessages={setMessages}
+              messages={messages}
+              setActive={setVoiceActive}
+            />
+          )}
 
           <div className="w-full flex items-center justify-center mb-4 gap-2 px-4">
             <img

@@ -252,7 +252,7 @@ export default function UserMeetings() {
                     </div>
                   ) : (
                     <>
-                      <div className="block md:hidden">
+                      <div className="block md:hidden text">
                         {upcomingMeetings.map((meeting) => (
                           <Card key={meeting.meeting_id} className="mb-4 p-4">
                             <div className="flex flex-col gap-2">
@@ -331,7 +331,7 @@ export default function UserMeetings() {
                       <div className="hidden md:block overflow-x-auto">
                         <table className="w-full">
                           <thead>
-                            <tr className="border-b bg-slate-50">
+                            <tr className="border-b bg-slate-50 dark:bg-gray-800">
                               <th className="text-left p-4 font-medium text-sm text-muted-foreground">
                                 Date
                               </th>
@@ -416,20 +416,23 @@ export default function UserMeetings() {
 
                 <TabsContent value="completed" className="m-0">
                   {completedMeetings.length === 0 ? (
-                    <div className="p-4 text-center text-muted-foreground">
+                    <div className="p-4 text-center text-muted-foreground dark:text-slate-400">
                       No completed meetings to display.
                     </div>
                   ) : (
                     <>
-                      <div className="block md:hidden">
+                      <div className="block md:hidden dark:bg-gray-800">
                         {completedMeetings.map((meeting) => (
-                          <Card key={meeting.meeting_id} className="mb-4 p-4">
+                          <Card
+                            key={meeting.meeting_id}
+                            className="mb-4 p-4 bg-white dark:bg-gray-900 border dark:border-gray-700"
+                          >
                             <div className="flex flex-col gap-2">
                               <div className="flex justify-between">
-                                <span className="text-sm font-medium text-muted-foreground">
+                                <span className="text-sm font-medium text-muted-foreground dark:text-slate-400">
                                   Date
                                 </span>
-                                <span className="text-sm">
+                                <span className="text-sm dark:text-white">
                                   {meeting.date
                                     ? new Date(
                                         meeting.date
@@ -438,24 +441,24 @@ export default function UserMeetings() {
                                 </span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm font-medium text-muted-foreground">
+                                <span className="text-sm font-medium text-muted-foreground dark:text-slate-400">
                                   Meeting time
                                 </span>
-                                <span className="text-sm">
+                                <span className="text-sm dark:text-white">
                                   {meeting.meeting_time || "N/A"}
                                 </span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm font-medium text-muted-foreground">
+                                <span className="text-sm font-medium text-muted-foreground dark:text-slate-400">
                                   Duration
                                 </span>
-                                <div className="flex items-center text-sm">
-                                  <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <div className="flex items-center text-sm dark:text-white">
+                                  <Clock className="h-4 w-4 mr-1 text-muted-foreground dark:text-slate-400" />
                                   <span>{meeting.duration || "N/A"}</span>
                                 </div>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm font-medium text-muted-foreground">
+                                <span className="text-sm font-medium text-muted-foreground dark:text-slate-400">
                                   Meeting ID
                                 </span>
                                 <span className="text-sm text-blue-500">
@@ -463,7 +466,7 @@ export default function UserMeetings() {
                                 </span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-sm font-medium text-muted-foreground">
+                                <span className="text-sm font-medium text-muted-foreground dark:text-slate-400">
                                   Link
                                 </span>
                                 {meeting.link ? (
@@ -476,7 +479,7 @@ export default function UserMeetings() {
                                     {meeting.link}
                                   </a>
                                 ) : (
-                                  "N/A"
+                                  <span className="dark:text-white">N/A</span>
                                 )}
                               </div>
                               <div className="flex justify-end">
@@ -500,46 +503,43 @@ export default function UserMeetings() {
                       <div className="hidden md:block overflow-x-auto">
                         <table className="w-full">
                           <thead>
-                            <tr className="border-b bg-slate-50">
-                              <th className="text-left p-4 font-medium text-sm text-muted-foreground">
-                                Date
-                              </th>
-                              <th className="text-left p-4 font-medium text-sm text-muted-foreground">
-                                Meeting time
-                              </th>
-                              <th className="text-left p-4 font-medium text-sm text-muted-foreground">
-                                Duration
-                              </th>
-                              <th className="text-left p-4 font-medium text-sm text-muted-foreground">
-                                Meeting ID
-                              </th>
-                              <th className="text-left p-4 font-medium text-sm text-muted-foreground">
-                                Link
-                              </th>
-                              <th className="text-left p-4 font-medium text-sm text-muted-foreground">
-                                Action
-                              </th>
+                            <tr className="border-b bg-slate-50 dark:bg-gray-800 dark:border-gray-700">
+                              {[
+                                "Date",
+                                "Meeting time",
+                                "Duration",
+                                "Meeting ID",
+                                "Link",
+                                "Action",
+                              ].map((header) => (
+                                <th
+                                  key={header}
+                                  className="text-left p-4 font-medium text-sm text-muted-foreground dark:text-slate-400"
+                                >
+                                  {header}
+                                </th>
+                              ))}
                             </tr>
                           </thead>
                           <tbody>
                             {completedMeetings.map((meeting) => (
                               <tr
                                 key={meeting.meeting_id}
-                                className="border-b hover:bg-slate-50"
+                                className="border-b hover:bg-slate-50 dark:hover:bg-gray-700 dark:border-gray-700"
                               >
-                                <td className="p-4 text-sm">
+                                <td className="p-4 text-sm dark:text-white">
                                   {meeting.date
                                     ? new Date(
                                         meeting.date
                                       ).toLocaleDateString()
                                     : "N/A"}
                                 </td>
-                                <td className="p-4 text-sm">
+                                <td className="p-4 text-sm dark:text-white">
                                   {meeting.meeting_time || "N/A"}
                                 </td>
-                                <td className="p-4 text-sm">
+                                <td className="p-4 text-sm dark:text-white">
                                   <div className="flex items-center">
-                                    <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                                    <Clock className="h-4 w-4 mr-1 text-muted-foreground dark:text-slate-400" />
                                     <span>{meeting.duration || "N/A"}</span>
                                   </div>
                                 </td>
@@ -557,7 +557,7 @@ export default function UserMeetings() {
                                       {meeting.link}
                                     </a>
                                   ) : (
-                                    "N/A"
+                                    <span className="dark:text-white">N/A</span>
                                   )}
                                 </td>
                                 <td className="p-4 text-sm">

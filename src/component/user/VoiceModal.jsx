@@ -5,13 +5,12 @@ import { Mic, X } from "lucide-react";
 
 // Define SpeechRecognition type
 
-export default function VoiceInput({ setActive }) {
+export default function VoiceInput({ setActive, setMessages, messages }) {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState("");
   const [isSupported, setIsSupported] = useState(true);
   const [recognition, setRecognition] = useState(null);
-
   useEffect(() => {
     // Check if running in browser environment
     if (typeof window === "undefined") return;
