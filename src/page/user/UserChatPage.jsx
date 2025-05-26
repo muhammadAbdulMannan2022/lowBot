@@ -910,7 +910,6 @@ export default function ChatInterface() {
           message: message,
           sender_type: "user",
         });
-
         navigation(`/chat/${newChatId}`);
       }
 
@@ -920,10 +919,13 @@ export default function ChatInterface() {
           sender_type: "bot",
         });
       }
+      console.log(mentor, mentor?.mentor_id);
+      // if (typeof mentor?.mentor_id != "string") {
       await axiosInstance.post(`/chats/${chatId}/history/`, {
         message: message,
         sender_type: "user",
       });
+      // }
 
       await fetchChatHistory(chatId);
       await fetchChatHistory(chatId || newChatId);

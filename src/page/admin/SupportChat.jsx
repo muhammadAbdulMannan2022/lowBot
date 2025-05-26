@@ -175,10 +175,10 @@ export default function SupportChat() {
       })
     );
     try {
-      await axiosInstance.post(`/chats/${chatId}/history/`, {
-        message: message,
-        sender_type: "mentor",
-      });
+      // await axiosInstance.post(`/chats/${chatId}/history/`, {
+      //   message: message,
+      //   sender_type: "mentor",
+      // });
       setMessages((prev) => [
         ...prev,
         {
