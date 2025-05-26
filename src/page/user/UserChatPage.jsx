@@ -882,6 +882,15 @@ export default function ChatInterface() {
             user_id: mentorId,
           })
         );
+        setMessages((prev) => [
+          ...prev,
+          {
+            message: message,
+            sender_type: "user",
+            chat_id: chatId,
+            main_chat_id: chatId,
+          },
+        ]);
       } else {
         console.error("WebSocket is not open");
         alert("Unable to send message: WebSocket connection is not open.");
@@ -920,15 +929,15 @@ export default function ChatInterface() {
         });
       }
       console.log(mentor, mentor?.mentor_id);
-      // if (typeof mentor?.mentor_id != "string") {
-      await axiosInstance.post(`/chats/${chatId}/history/`, {
-        message: message,
-        sender_type: "user",
-      });
-      // }
+      if (typeof mentor?.mentor_id != "string") {
+        await axiosInstance.post(`/chats/${chatId}/history/`, {
+          message: message,
+          sender_type: "user",
+        });
+      }
 
-      await fetchChatHistory(chatId);
-      await fetchChatHistory(chatId || newChatId);
+      // await fetchChatHistory(chatId);
+      // await fetchChatHistory(chatId || newChatId);
       setMessage("");
       setShowBotReply(true);
     } catch (error) {
