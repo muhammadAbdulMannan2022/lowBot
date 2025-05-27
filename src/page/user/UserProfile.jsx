@@ -76,7 +76,7 @@ export default function UserProfile() {
                         : "https://media.istockphoto.com/id/1289220545/photo/beautiful-woman-smiling-with-crossed-arms.jpg?s=612x612&w=0&k=20&c=qmOTkGstKj1qN0zPVWj-n28oRA6_BHQN8uVLIXg0TF8="
                     }
                     alt="Profile picture"
-                    className="rounded-full object-cover w-[120px] h-[120px] md:w-[150px] md:h-[150px]"
+                    className="rounded-full object-cover w-[120px] h-[120px] md:w-[150px] md:h-[150px] border dark:border-gray-700"
                   />
                 </div>
                 <div className="flex flex-col flex-1 gap-4">

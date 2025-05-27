@@ -1388,17 +1388,25 @@ export default function ChatInterface() {
                           fetchChatData={fetchChatHistory}
                           chatId={chatId}
                           setTimeMettingShow={setTimeMettingShow}
+                          mentorId={
+                            mentorsId.find(
+                              (mentor) => mentor.chat_id === chatId
+                            )?.mentor_id || null
+                          }
                         />
                       </div>
                     )}
-
                     {messages[0].chat?.meetings.length === 1 && (
                       <div className="flex flex-col gap-4 bg-[#EAF3FB] dark:bg-gray-800 py-2 px-2 rounded-md">
+                        {console.log(
+                          messages[0].chat?.meetings,
+                          "meetings length"
+                        )}
                         <p className="text-gray-700 dark:text-gray-300 mb-2 text-center">
                           A meeting has been scheduled with our expert to
-                          discuss your concerns. Please be available on 16 July,
-                          2025 at 2:30AM via Zoom. Meeting link will be
-                          available in the meeting section.
+                          discuss your concerns. Please be available via Zoom.
+                          Meeting link and time will be available in the meeting
+                          section.
                         </p>
                       </div>
                     )}

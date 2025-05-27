@@ -1,4 +1,5 @@
 import { Search, Clock, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -207,30 +208,32 @@ export default function UserMeetings() {
             </Card>
 
             <Card className="bg-white dark:bg-gray-800 dark:text-white">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-sm text-muted-foreground mb-1">
-                    Upcoming
-                  </h2>
-                  <p className="text-sm text-muted-foreground">Time</p>
-                </div>
-                <div className="flex justify-between items-center flex-wrap">
-                  <p className="font-medium text-blue-500">
-                    {upcomingMeeting
-                      ? `Meeting ID: ${upcomingMeeting.meeting_id}`
-                      : "No upcoming meeting"}
-                  </p>
-                  <p className="font-medium">
-                    {upcomingMeeting
-                      ? `${new Date(
-                          upcomingMeeting.date
-                        ).toLocaleDateString()} ${
-                          upcomingMeeting.meeting_time || "N/A"
-                        }`
-                      : "N/A"}
-                  </p>
-                </div>
-              </CardContent>
+              <Link to={upcomingMeeting.link}>
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-sm text-muted-foreground mb-1">
+                      Upcoming
+                    </h2>
+                    <p className="text-sm text-muted-foreground">Time</p>
+                  </div>
+                  <div className="flex justify-between items-center flex-wrap">
+                    <p className="font-medium text-blue-500">
+                      {upcomingMeeting
+                        ? `Meeting ID: ${upcomingMeeting.meeting_id}`
+                        : "No upcoming meeting"}
+                    </p>
+                    <p className="font-medium">
+                      {upcomingMeeting
+                        ? `${new Date(
+                            upcomingMeeting.date
+                          ).toLocaleDateString()} ${
+                            upcomingMeeting.meeting_time || "N/A"
+                          }`
+                        : "N/A"}
+                    </p>
+                  </div>
+                </CardContent>
+              </Link>
             </Card>
           </div>
 
