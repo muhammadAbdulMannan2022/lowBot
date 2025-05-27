@@ -242,7 +242,7 @@ export default function UserMeetings() {
           {/* Tabs and Meeting Table */}
           <div className="bg-white rounded-lg shadow-sm dark:bg-gray-800 dark:text-white">
             <Tabs defaultValue="upcoming">
-              <div className="flex flex-col md:flex-row justify-between items-center p-4 border-b gap-4">
+              <div className="flex flex-col md:flex-row justify-between items-center p-4 border-b gap-4 dark:border-gray-600">
                 <TabsList className="w-full md:w-auto">
                   <TabsTrigger
                     value="upcoming"
@@ -356,7 +356,7 @@ export default function UserMeetings() {
                     <div className="hidden md:block overflow-x-auto">
                       <table className="w-full">
                         <thead>
-                          <tr className="border-b bg-slate-50">
+                          <tr className="border-b bg-slate-50 dark:bg-gray-700 dark:border-gray-600">
                             <th className="text-left p-4 font-medium text-sm text-muted-foreground">
                               Date
                             </th>
@@ -381,7 +381,7 @@ export default function UserMeetings() {
                           {upcomingMeetings.map((meeting) => (
                             <tr
                               key={meeting.meeting_id}
-                              className="border-b hover:bg-slate-50"
+                              className="border-b dark:border-gray-600"
                             >
                               <td className="p-4 text-sm">
                                 {meeting.date
@@ -521,7 +521,7 @@ export default function UserMeetings() {
                     <div className="hidden md:block overflow-x-auto">
                       <table className="w-full">
                         <thead>
-                          <tr className="border-b bg-slate-50">
+                          <tr className="border-b bg-slate-50 dark:bg-gray-800">
                             <th className="text-left p-4 font-medium text-sm text-muted-foreground">
                               Date
                             </th>
