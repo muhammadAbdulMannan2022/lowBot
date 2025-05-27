@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../axiosInstance";
-import { Mic, MicOff, Loader } from "lucide-react";
+import { Mic, MicOff, Loader, X } from "lucide-react";
 
 const VoiceToVoiceChat = ({ chatId, isVToVActive, setActive }) => {
   const [messages, setMessages] = useState([]);
@@ -9,6 +9,7 @@ const VoiceToVoiceChat = ({ chatId, isVToVActive, setActive }) => {
   const [speaking, setSpeaking] = useState(false);
 
   const startVoiceRecognition = () => {
+    window.speechSynthesis.cancel();
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -65,6 +66,12 @@ const VoiceToVoiceChat = ({ chatId, isVToVActive, setActive }) => {
 
   return (
     <div className="h-[80vh] w-[90%] flex items-center justify-center bg-white dark:bg-gray-900 transition-colors absolute top-0">
+      <button
+        onClick={() => setActive(false)}
+        className="absolute top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
+      >
+        <X />
+      </button>
       <div className="p-4 max-w-md mx-auto text-center space-y-6">
         <button
           onClick={startVoiceRecognition}
@@ -77,9 +84,9 @@ const VoiceToVoiceChat = ({ chatId, isVToVActive, setActive }) => {
             text-white shadow-lg`}
         >
           {listening ? (
-            <MicOff className="w-8 h-8 animate-ping-slow" />
-          ) : (
             <Mic className="w-8 h-8" />
+          ) : (
+            <MicOff className="w-8 h-8 animate-ping-slow" />
           )}
 
           {speaking && (
