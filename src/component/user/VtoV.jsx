@@ -1,12 +1,53 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import axiosInstance from "../axiosInstance";
-import { Mic, MicOff, Loader, X } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Mic, MicOff, X } from "lucide-react";
+
+const WS_URL = `ws://192.168.10.124:3100/ws/api/v1/chat/ai_voice_chat/?Authorization=Beare ${localStorage.getItem(
+  "token"
+)}`;
 
 const VoiceToVoiceChat = ({ chatId, isVToVActive, setActive }) => {
-  const [messages, setMessages] = useState([]);
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const ws = useRef(null);
+
+  // Connect to WebSocket on mount
+  useEffect(() => {
+    ws.current = new WebSocket(WS_URL);
+
+    ws.current.onopen = () => {
+      console.log("WebSocket connected");
+      ws.current.send(JSON.stringify({ type: "subscribe", chat_id: chatId }));
+    };
+
+    ws.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      // Only speak the bot's response, do not show any messages
+      if (data.message) {
+        const utterance = new window.SpeechSynthesisUtterance(data.message);
+        utterance.lang = "en-US";
+        utterance.onstart = () => setSpeaking(true);
+        utterance.onend = () => setSpeaking(false);
+        if (isVToVActive) {
+          window.speechSynthesis.speak(utterance);
+        }
+      }
+    };
+
+    ws.current.onerror = (err) => {
+      console.error("WebSocket error:", err);
+    };
+
+    ws.current.onclose = () => {
+      console.log("WebSocket closed");
+    };
+
+    return () => {
+      ws.current && ws.current.close();
+      window.speechSynthesis.cancel();
+    };
+    // eslint-disable-next-line
+  }, [chatId, isVToVActive]);
 
   const startVoiceRecognition = () => {
     window.speechSynthesis.cancel();
@@ -30,34 +71,17 @@ const VoiceToVoiceChat = ({ chatId, isVToVActive, setActive }) => {
     };
     recognition.onend = () => setListening(false);
 
-    recognition.onresult = async (event) => {
+    recognition.onresult = (event) => {
       const message = event.results[0][0].transcript;
-      console.log("User said:", message);
-
-      try {
-        await axiosInstance.post(`/chats/${chatId}/history/`, {
-          message,
-          sender_type: "user",
-        });
-
-        const response = await axiosInstance.get(`/chats/${chatId}/history/`);
-        const allMessages = response.data;
-        const botMessage = allMessages[allMessages.length - 1];
-
-        setMessages(allMessages);
-
-        if (botMessage?.sender_type === "bot") {
-          const utterance = new SpeechSynthesisUtterance(botMessage.message);
-          utterance.lang = "en-US";
-
-          utterance.onstart = () => setSpeaking(true);
-          utterance.onend = () => setSpeaking(false);
-          isVToVActive
-            ? window.speechSynthesis.speak(utterance)
-            : window.speechSynthesis.cancel(utterance);
-        }
-      } catch (err) {
-        console.error("Chat error:", err);
+      // Send message to WebSocket only, do not store or display
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        ws.current.send(
+          JSON.stringify({
+            chat_id: chatId,
+            sender_type: "user",
+            message,
+          })
+        );
       }
     };
 

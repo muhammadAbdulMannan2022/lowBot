@@ -11,18 +11,19 @@ import {
 import UserDetailsModal from "../../component/admin/UserDetailsModal";
 import GiveNoticeModal from "../../component/admin/GiveNoticeModal";
 import Sidebar from "../../component/admin/Sidebar";
+import axiosInstance from "../../component/axiosInstance";
 
-const users = [
-  { id: "55-1234", name: "Takács Bianka", startingDate: "12 July 2024" },
-  { id: "55-1234", name: "Sipos Veronika", startingDate: "12 July 2024" },
-  { id: "55-1234", name: "Nagy Timea", startingDate: "12 July 2024" },
-  { id: "55-1234", name: "Kende Lili", startingDate: "12 July 2024" },
-  { id: "55-1234", name: "Pásztor Kira", startingDate: "12 July 2024" },
-  { id: "55-1234", name: "Virág Mercédesz", startingDate: "12 July 2024" },
-  { id: "55-1234", name: "Hajdú Dominika", startingDate: "12 July 2024" },
-  { id: "55-1234", name: "Balázs Annamária", startingDate: "12 July 2024" },
-  { id: "55-1234", name: "Kelemen Krisztina", startingDate: "12 July 2024" },
-];
+// const users = [
+//   { id: "55-1234", name: "Takács Bianka", startingDate: "12 July 2024" },
+//   { id: "55-1234", name: "Sipos Veronika", startingDate: "12 July 2024" },
+//   { id: "55-1234", name: "Nagy Timea", startingDate: "12 July 2024" },
+//   { id: "55-1234", name: "Kende Lili", startingDate: "12 July 2024" },
+//   { id: "55-1234", name: "Pásztor Kira", startingDate: "12 July 2024" },
+//   { id: "55-1234", name: "Virág Mercédesz", startingDate: "12 July 2024" },
+//   { id: "55-1234", name: "Hajdú Dominika", startingDate: "12 July 2024" },
+//   { id: "55-1234", name: "Balázs Annamária", startingDate: "12 July 2024" },
+//   { id: "55-1234", name: "Kelemen Krisztina", startingDate: "12 July 2024" },
+// ];
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,14 +31,34 @@ const UserManagement = () => {
   const [isGiveNoticeModalOpen, setIsGiveNoticeModalOpen] = useState(false);
   const [dropdownIndex, setDropdownIndex] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [users, setUsers] = useState([]); // State to hold users
+  const [userDetails, setUserDetails] = useState({}); // State to hold user details
 
   const dropdownRefs = useRef([]); // Array to store refs for each dropdown
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.id.includes(searchTerm)
-  );
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await axiosInstance.get("/auth/users/");
+        setUsers(res.data);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const filteredUsers = users.filter((user) => {
+    const name =
+      (user.user_profile?.first_name || "") +
+      " " +
+      (user.user_profile?.last_name || "");
+    return (
+      name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(user.id).includes(searchTerm)
+    );
+  });
 
   const toggleDropdown = (index) => {
     setDropdownIndex(dropdownIndex === index ? null : index);
@@ -108,7 +129,13 @@ const UserManagement = () => {
                     Name
                   </th>
                   <th className="py-2 px-2 md:py-3 md:px-4" scope="col">
-                    Starting Date
+                    Email
+                  </th>
+                  <th className="py-2 px-2 md:py-3 md:px-4" scope="col">
+                    Role
+                  </th>
+                  <th className="py-2 px-2 md:py-3 md:px-4" scope="col">
+                    Joined Date
                   </th>
                   <th className="py-2 px-2 md:py-3 md:px-4" scope="col">
                     User Info
@@ -121,21 +148,34 @@ const UserManagement = () => {
               <tbody>
                 {filteredUsers.map((user, index) => (
                   <tr
-                    key={index}
+                    key={user.id}
                     className="border-t border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-xs md:text-sm hover:bg-gray-50 dark:hover:bg-gray-700 relative"
                   >
                     <td className="py-2 px-2 md:py-3 md:px-4 truncate">
                       {user.id}
                     </td>
-                    <td className="py-2 px-2 md:py-3 md:px-4">{user.name}</td>
                     <td className="py-2 px-2 md:py-3 md:px-4">
-                      {user.startingDate}
+                      {(user.user_profile?.first_name || "-") +
+                        " " +
+                        (user.user_profile?.last_name || "-")}
+                    </td>
+                    <td className="py-2 px-2 md:py-3 md:px-4">{user.email}</td>
+                    <td className="py-2 px-2 md:py-3 md:px-4">{user.role}</td>
+                    <td className="py-2 px-2 md:py-3 md:px-4">
+                      {user.user_profile?.joined_date
+                        ? new Date(
+                            user.user_profile.joined_date
+                          ).toLocaleDateString()
+                        : "-"}
                     </td>
                     <td className="py-2 px-2 md:py-3 md:px-4">
                       <button
                         className="flex items-center text-gray-600 dark:text-gray-300 hover:text-blue-600"
-                        onClick={() => setIsUserDetailsModalOpen(true)}
-                        aria-label={`View details for ${user.name}`}
+                        onClick={() => {
+                          setIsUserDetailsModalOpen(true);
+                          setUserDetails(user.user_profile);
+                        }}
+                        aria-label={`View details for ${user.email}`}
                       >
                         <FiInfo className="mr-1 h-4 w-4" />
                         Click
@@ -145,7 +185,7 @@ const UserManagement = () => {
                       <button
                         onClick={() => toggleDropdown(index)}
                         className="text-gray-600 dark:text-gray-300 hover:text-blue-600"
-                        aria-label={`More actions for ${user.name}`}
+                        aria-label={`More actions for ${user.email}`}
                       >
                         <FiMoreHorizontal className="h-5 w-5" />
                       </button>
@@ -157,7 +197,7 @@ const UserManagement = () => {
                           <button
                             onClick={() => handleDeleteAccount(user)}
                             className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left text-xs md:text-sm"
-                            aria-label={`Delete account for ${user.name}`}
+                            aria-label={`Delete account for ${user.email}`}
                           >
                             <FiTrash2 className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-300" />
                             Delete Account
@@ -165,7 +205,7 @@ const UserManagement = () => {
                           <button
                             onClick={() => handleGiveNotice(user)}
                             className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left text-xs md:text-sm"
-                            aria-label={`Give notice to ${user.name}`}
+                            aria-label={`Give notice to ${user.email}`}
                           >
                             <FiAlertTriangle className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-300" />
                             Give a Notice
@@ -184,6 +224,7 @@ const UserManagement = () => {
         <UserDetailsModal
           isOpen={isUserDetailsModalOpen}
           onClose={() => setIsUserDetailsModalOpen(false)}
+          user={userDetails}
         />
 
         {/* Give Notice Modal */}
