@@ -776,6 +776,12 @@ export default function ChatInterface() {
 
     chatWs.current.onclose = () => {
       console.log("chat WebSocket closed");
+      chatWs.current = new WebSocket(
+        `ws://192.168.10.124:3100/ws/api/v1/chat/?Authorization=Bearer ${token}`
+      );
+      chatWs.current.onopen = () => {
+        console.log("chat WebSocket connected user chat page");
+      };
     };
 
     return () => {

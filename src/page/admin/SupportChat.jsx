@@ -34,55 +34,70 @@ export default function SupportChat() {
   useEffect(() => {
     setChatId(route.id);
   }, [route]);
+
+  const RECONNECT_INTERVAL = 100; // 3 seconds
+
   useEffect(() => {
-    // console.log(token);
-    chatWs.current = new WebSocket(
-      `ws://192.168.10.124:3100/ws/api/v1/chat/?Authorization=Bearer ${token}`
-    );
-    chatWs.current.onopen = () => {
-      console.log("chat WebSocket connected");
+    let reconnectTimeout;
+    let shouldReconnect = true;
+
+    const connectWebSocket = () => {
+      if (!token || !chatId) return;
+
+      chatWs.current = new WebSocket(
+        `ws://192.168.10.124:3100/ws/api/v1/chat/?Authorization=Bearer ${token}`
+      );
+
+      chatWs.current.onopen = () => {
+        console.log("chat WebSocket connected");
+      };
+
+      chatWs.current.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        const receivedData = data.message;
+
+        if (data.main_chat_id === chatId) {
+          const mess = {
+            id: receivedData.id || "",
+            message: receivedData.message,
+            attachment_name: receivedData.attachment_name || null,
+            attachment_data: receivedData.attachment_data || null,
+            sender: receivedData.sender,
+            receiver: receivedData.receiver,
+            reply_to: receivedData.reply_to,
+            timestamp: receivedData.timestamp,
+            is_read: receivedData.is_read,
+            is_deleted: receivedData.is_deleted,
+            is_edited: receivedData.is_edited,
+            is_reported: receivedData.is_reported,
+            sender_type: receivedData.sender_type || "user",
+          };
+          setMessages((prevMessage) => [...prevMessage, mess]);
+        }
+      };
+
+      chatWs.current.onerror = (err) => {
+        console.error("chat WebSocket error:", err);
+        chatWs.current.close(); // Trigger onclose to reconnect
+      };
+
+      chatWs.current.onclose = () => {
+        console.log("chat WebSocket closed");
+        if (shouldReconnect) {
+          reconnectTimeout = setTimeout(connectWebSocket, RECONNECT_INTERVAL);
+        }
+      };
     };
 
-    chatWs.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      const receivedData = data.message;
-      if (data.main_chat_id === chatId) {
-        console.log(data.message);
-
-        const mess = {
-          id: receivedData.id || "",
-          message: receivedData.message,
-          attachment_name: receivedData.attachment_name || null,
-          attachment_data: receivedData.attachment_data || null,
-          sender: receivedData.sender,
-          receiver: receivedData.receiver,
-          reply_to: receivedData.reply_to,
-          timestamp: receivedData.timestamp,
-          is_read: receivedData.is_read,
-          is_deleted: receivedData.is_deleted,
-          is_edited: receivedData.is_edited,
-          is_reported: receivedData.is_reported,
-          sender_type: receivedData.sender_type || "user",
-        };
-        setMessages((prevMessage) => [...prevMessage, mess]);
-        console.log(data, messages);
-      }
-    };
-
-    chatWs.current.onerror = (err) => {
-      console.error("chat WebSocket error:", err);
-    };
-
-    chatWs.current.onclose = () => {
-      console.log("chat WebSocket closed");
-    };
+    connectWebSocket(); // Initial connection
 
     return () => {
-      if (chatWs.current) {
-        chatWs.current.close();
-      }
+      shouldReconnect = false;
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (chatWs.current) chatWs.current.close();
     };
   }, [token, chatId]);
+
   //
   //
   //
