@@ -706,10 +706,12 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../component/axiosInstance";
 import SupportOptions from "../../components/support-options";
 import MettingOptions from "../../components/support-options-metting";
+import VoiceToVoiceChat from "../../component/user/VtoV";
 
 export default function ChatInterface() {
   const [activeTab, setActiveTab] = useState("solved");
   const [voiceActive, setVoiceActive] = useState(false);
+  const [isVToVActive, setIsVToVActive] = useState(false);
   const [videoActive, setVideoActive] = useState(false);
   const [sidebarData, setSideBarData] = useState([]);
   const [message, setMessage] = useState("");
@@ -855,7 +857,10 @@ export default function ChatInterface() {
     console.log("Fetching chat history for chatId:", id);
     try {
       const response = await axiosInstance.get(`/chats/${id}/history/`);
-      setMessages(response.data);
+      const chatMessages = await axiosInstance.get(
+        `/realtime/chats/history/${id}/`
+      );
+      setMessages([...response.data, ...chatMessages.data.messages]);
       console.log("response of chat", response.data);
     } catch (error) {
       console.error("Error fetching chat history:", error);
@@ -1007,6 +1012,7 @@ export default function ChatInterface() {
 
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-white">
+      {console.log(messages)}
       <Button
         variant="ghost"
         className="fixed top-20 -left-3 z-0 md:hidden"
@@ -1398,12 +1404,20 @@ export default function ChatInterface() {
 
           {voiceActive && (
             <VoiceInput
-              setMessages={setMessages}
+              setMessage={setMessage}
               messages={messages}
               setActive={setVoiceActive}
+              handleSendMessage={handleSendMessage}
             />
           )}
-
+          {/* voice to voice */}
+          {isVToVActive && (
+            <VoiceToVoiceChat
+              isVToVActive={isVToVActive}
+              setActive={setIsVToVActive}
+              chatId={chatId}
+            />
+          )}
           <div className="w-full flex items-center justify-center mb-4 gap-2 px-4">
             <img
               src={videoMic}
@@ -1434,7 +1448,12 @@ export default function ChatInterface() {
                     className="text-gray-500 dark:text-gray-300 cursor-pointer"
                     onClick={() => setVoiceActive(!voiceActive)}
                   />
-                  <img src={voice} alt="Voice icon" className="h-5 w-5" />
+                  <img
+                    onClick={() => setIsVToVActive(!isVToVActive)}
+                    src={voice}
+                    alt="Voice icon"
+                    className="h-5 w-5"
+                  />
                 </div>
               </div>
 
