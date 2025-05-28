@@ -10,6 +10,7 @@ const VoiceToVoiceChat = ({ chatId, isVToVActive, setActive }) => {
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const ws = useRef(null);
+  const recognitionRef = useRef(null);
 
   // Connect to WebSocket on mount
   useEffect(() => {
@@ -51,6 +52,7 @@ const VoiceToVoiceChat = ({ chatId, isVToVActive, setActive }) => {
 
   const startVoiceRecognition = () => {
     window.speechSynthesis.cancel();
+
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -66,14 +68,17 @@ const VoiceToVoiceChat = ({ chatId, isVToVActive, setActive }) => {
 
     recognition.onstart = () => setListening(true);
     recognition.onerror = (e) => {
-      console.error("Speech recognition error:", e);
       setListening(false);
     };
     recognition.onend = () => setListening(false);
 
+    // This is the key: stop bot speech as soon as user starts talking
+    recognition.onspeechstart = () => {
+      window.speechSynthesis.cancel();
+    };
+
     recognition.onresult = (event) => {
       const message = event.results[0][0].transcript;
-      // Send message to WebSocket only, do not store or display
       if (ws.current && ws.current.readyState === WebSocket.OPEN) {
         ws.current.send(
           JSON.stringify({
@@ -83,11 +88,25 @@ const VoiceToVoiceChat = ({ chatId, isVToVActive, setActive }) => {
           })
         );
       }
+      // Optionally, restart recognition for continuous interaction
+      recognition.stop();
+      setTimeout(() => startVoiceRecognition(), 500);
     };
 
+    recognitionRef.current = recognition;
     recognition.start();
   };
 
+  // Optionally, auto-start recognition when the component mounts
+  useEffect(() => {
+    if (isVToVActive) {
+      startVoiceRecognition();
+    }
+    return () => {
+      recognitionRef.current && recognitionRef.current.abort();
+    };
+    // eslint-disable-next-line
+  }, [isVToVActive]);
   return (
     <div className="h-[80vh] w-[90%] flex items-center justify-center bg-white dark:bg-gray-900 transition-colors absolute top-0">
       <button

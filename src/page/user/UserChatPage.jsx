@@ -707,6 +707,7 @@ import axiosInstance from "../../component/axiosInstance";
 import SupportOptions from "../../components/support-options";
 import MettingOptions from "../../components/support-options-metting";
 import VoiceToVoiceChat from "../../component/user/VtoV";
+import SummaryModal from "./Summary";
 
 export default function ChatInterface() {
   const [activeTab, setActiveTab] = useState("solved");
@@ -723,6 +724,8 @@ export default function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef(null);
   const navigation = useNavigate();
+  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+  const [summaryChatId, setSummaryChatId] = useState("");
   // mentros id
   const [mentorsId, setMentorsId] = useState([]);
   const route = useParams();
@@ -1224,20 +1227,28 @@ export default function ChatInterface() {
                               </div>
 
                               {isExpanded == chat.chat_id && (
-                                <div className="py-2 mb-1 flex items-center gap-2 cursor-pointer">
-                                  <div className="bg-blue-100 dark:bg-blue-900 shadow-md w-[50%] p-1 rounded-md flex space-x-1 items-center px-4 py-2">
-                                    <CgNotes className="w-4 h-4 text-gray-700 dark:text-white" />
-                                    <span className="text-xs text-gray-800 dark:text-gray-200">
-                                      Summary
-                                    </span>
+                                <>
+                                  <div className="py-2 mb-1 flex items-center gap-2 cursor-pointer">
+                                    <div
+                                      onClick={() => {
+                                        setIsSummaryOpen(true);
+                                        setSummaryChatId(chat.chat_id);
+                                      }}
+                                      className="bg-blue-100 dark:bg-blue-900 shadow-md w-[50%] p-1 rounded-md flex space-x-1 items-center px-4 py-2"
+                                    >
+                                      <CgNotes className="w-4 h-4 text-gray-700 dark:text-white" />
+                                      <span className="text-xs text-gray-800 dark:text-gray-200">
+                                        Summary
+                                      </span>
+                                    </div>
+                                    <div className="bg-blue-100 dark:bg-blue-900 shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2">
+                                      <Video className="w-4 h-4 mr-1 text-gray-700 dark:text-white" />
+                                      <span className="text-xs text-gray-800 dark:text-gray-200">
+                                        Watch video
+                                      </span>
+                                    </div>
                                   </div>
-                                  <div className="bg-blue-100 dark:bg-blue-900 shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2">
-                                    <Video className="w-4 h-4 mr-1 text-gray-700 dark:text-white" />
-                                    <span className="text-xs text-gray-800 dark:text-gray-200">
-                                      Watch video
-                                    </span>
-                                  </div>
-                                </div>
+                                </>
                               )}
                             </div>
                           ))}
@@ -1486,6 +1497,15 @@ export default function ChatInterface() {
           setTimeMettingShow(true);
           setVideoActive(false);
         }}
+      />
+      {/* showing summary */}
+      <SummaryModal
+        isOpen={isSummaryOpen}
+        onClose={() => {
+          setIsSummaryOpen(false);
+          setSummaryChatId("");
+        }}
+        meetingId={summaryChatId}
       />
     </div>
   );
