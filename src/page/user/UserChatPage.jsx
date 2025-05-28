@@ -869,7 +869,22 @@ export default function ChatInterface() {
       const chatMessages = await axiosInstance.get(
         `/realtime/chats/history/${id}/`
       );
-      setMessages([...response.data, ...chatMessages.data.messages]);
+      const currentUserId = Number(localStorage.getItem("id"));
+
+      // Set sender_type if missing
+      const processedRealtimeMessages = (chatMessages.data.messages || []).map(
+        (msg) => {
+          if (!msg.sender_type) {
+            if (msg.receiver === currentUserId) {
+              return { ...msg, sender_type: "mentor" };
+            } else {
+              return { ...msg, sender_type: "user" };
+            }
+          }
+          return msg;
+        }
+      );
+      setMessages([...response.data, ...processedRealtimeMessages]);
       console.log("response of chat", response.data);
     } catch (error) {
       console.error("Error fetching chat history:", error);

@@ -134,8 +134,27 @@ export default function SupportChat() {
       const response = await axiosInstance.get(
         `/realtime/chats/history/${chat_id}/`
       );
-      setMessages([...response.data?.bot_messages, ...response.data?.messages]);
-      console.log(response.data?.bot_messages);
+      const currentUserId = Number(localStorage.getItem("id"));
+
+      // Combine and set sender_type if missing
+      const combinedMessages = [
+        ...(response.data?.bot_messages || []),
+        ...(response.data?.messages || []),
+      ].map((msg) => {
+        if (!msg.sender_type) {
+          // If receiver is current user, sender is mentor
+          if (msg.sender === currentUserId) {
+            console.log(msg.receiver, currentUserId);
+            return { ...msg, sender_type: "mentor" };
+          } else {
+            return { ...msg, sender_type: "user" };
+          }
+        }
+        return msg;
+      });
+
+      setMessages(combinedMessages);
+      console.log(response.data?.bot_messages, combinedMessages);
       const endpoint = isRequest
         ? "/chats/help-desk/tickets/list/"
         : "/chats/help_desk/running/list/";
