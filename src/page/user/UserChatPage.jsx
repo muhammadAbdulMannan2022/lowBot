@@ -690,7 +690,7 @@
 // }
 
 import { useState, useRef, useEffect } from "react";
-import { Paperclip, Plus, Video, Send, Minus } from "lucide-react";
+import { Paperclip, Plus, Video, Send, Minus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FiCheck, FiMic } from "react-icons/fi";
@@ -730,6 +730,9 @@ export default function ChatInterface() {
   const [mentorsId, setMentorsId] = useState([]);
   const route = useParams();
   const chatWs = useRef(null);
+  // file input reference
+  const [attachedImage, setAttachedImage] = useState(""); // base64 string
+  const [attachedImagePreview, setAttachedImagePreview] = useState(null); // for preview
 
   const messagesEndRef = useRef(null);
   useEffect(() => {
@@ -893,8 +896,8 @@ export default function ChatInterface() {
   };
 
   const handleSendMessage = async () => {
-    if (!message.trim()) return;
     console.log(mentorsId, "mentores id is");
+    if (!message.trim() && !attachedImage.trim()) return;
     // Find the mentor_id for the current chatId
     const mentor = mentorsId.find((mentor) => mentor.chat_id === chatId);
     const mentorId = mentor ? mentor.mentor_id : null;
@@ -909,6 +912,8 @@ export default function ChatInterface() {
             message: message,
             main_chat_id: chatId,
             user_id: mentorId,
+            attachment_data: attachedImage,
+            attachment_name: attachedImage ? "image.png" : null,
           })
         );
         setMessages((prev) => [
@@ -918,6 +923,8 @@ export default function ChatInterface() {
             sender_type: "user",
             chat_id: chatId,
             main_chat_id: chatId,
+            attachment_data: attachedImage,
+            attachment_name: attachedImage ? "image.png" : null,
           },
         ]);
       } else {
@@ -1032,6 +1039,37 @@ export default function ChatInterface() {
     await axiosInstance.put(`chats/${chatId}/mark-as-solved/`, {});
     fetchChat();
     fetchChatHistory(chatId);
+  };
+  // useEffect(() => {
+  //   if (attachedImage) {
+  //     console.log(attachedImage, "attached image (updated)");
+  //   }
+  // }, [attachedImage]);
+  // Handle file input change
+  const toBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = reader.result;
+        resolve(base64);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const base64 = await toBase64(file);
+      setAttachedImage(base64);
+      setAttachedImagePreview(base64);
+    }
+    console.log(attachedImage, "attached image");
+  };
+
+  // Remove attached image
+  const handleRemoveImage = () => {
+    setAttachedImage(null);
+    setAttachedImagePreview(null);
   };
 
   return (
@@ -1320,6 +1358,12 @@ export default function ChatInterface() {
                             <span className="text-sm text-gray-800 dark:text-white">
                               {msg.message}
                             </span>
+                            {msg.attachment_data && (
+                              <img
+                                src={`${msg.attachment_data}`}
+                                alt={msg.attachment_name}
+                              />
+                            )}
                             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               Bot
                             </div>
@@ -1329,6 +1373,12 @@ export default function ChatInterface() {
                             <span className="text-sm text-gray-800 dark:text-white">
                               {msg.message}
                             </span>
+                            {msg.attachment_data && (
+                              <img
+                                src={`${msg.attachment_data}`}
+                                alt={msg.attachment_name}
+                              />
+                            )}
                             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               {msg.sender_type === "user"
                                 ? "You"
@@ -1467,10 +1517,33 @@ export default function ChatInterface() {
             />
 
             <div className="px-2 py-2 border-t dark:border-gray-600 bg-[#E9ECF3] dark:bg-gray-800 w-full max-w-6xl rounded-3xl flex items-center gap-2">
-              <Paperclip
-                size={23}
-                className="text-gray-500 dark:text-gray-300"
-              />
+              {attachedImagePreview && (
+                <div className="relative">
+                  <img
+                    src={attachedImagePreview}
+                    alt="Attached"
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                  <button
+                    onClick={handleRemoveImage}
+                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              )}
+              <label className="cursor-pointer">
+                <Paperclip
+                  size={23}
+                  className="text-gray-500 dark:text-gray-300"
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
 
               <div className="bg-white dark:bg-gray-900 w-full rounded-3xl px-4 flex items-center justify-between">
                 <input

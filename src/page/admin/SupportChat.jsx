@@ -28,6 +28,8 @@ export default function SupportChat() {
   const [isRequest, setIsRequest] = useState(true);
   const [oldChats, setOldChats] = useState([]);
   const { auth } = useAuth();
+  const [attachedImage, setAttachedImage] = useState(null);
+  const [attachedImagePreview, setAttachedImagePreview] = useState(null);
   // socket
   const chatWs = useRef(null);
   const token = localStorage.getItem("token");
@@ -197,7 +199,7 @@ export default function SupportChat() {
 
   // Handle sending a message
   const handleSendMessage = async () => {
-    if (!message.trim() || !selectedChat) return;
+    if (!message.trim() && !selectedChat) return;
     const user_to_send = chats.find((chat) => chat.chat_id === chatId);
     console.log(user_to_send?.user);
     chatWs.current.send(
@@ -206,6 +208,8 @@ export default function SupportChat() {
         message,
         main_chat_id: chatId,
         sender_type: "mentor",
+        attachment_data: attachedImage,
+        attachment_name: attachedImage ? "image.png" : null,
       })
     );
     try {
@@ -220,9 +224,13 @@ export default function SupportChat() {
           sender_type: "mentor",
           message: message,
           timestamp: new Date(),
+          attachment_data: attachedImage,
+          attachment_name: attachedImage ? "image.png" : null,
         },
       ]);
       setMessage("");
+      setAttachedImage(null);
+      setAttachedImagePreview(null);
     } catch (error) {
       console.error("Error sending message:", error);
       alert("An error occurred while sending the message.");
@@ -277,7 +285,27 @@ export default function SupportChat() {
 
     fetchMessages(chatId);
   };
+  // handle file input change
+  const toBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
 
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const base64 = await toBase64(file);
+      setAttachedImage(base64);
+      setAttachedImagePreview(base64);
+    }
+  };
+  const handleRemoveImage = () => {
+    setAttachedImage(null);
+    setAttachedImagePreview(null);
+  };
   // console.logf('chat.is_finding', selectedChat);
   return (
     <div className="flex flex-col h-screen bg-[#f0f7ff] dark:bg-gray-900">
@@ -516,6 +544,17 @@ export default function SupportChat() {
                             <p className="text-sm md:text-base">
                               {msg.message}
                             </p>
+                            {msg.attachment_data && (
+                              <img
+                                src={
+                                  msg.attachment_data.startsWith("data:image/")
+                                    ? msg.attachment_data
+                                    : `data:image/png;base64,${msg.attachment_data}`
+                                }
+                                alt={msg.attachment_name || "attachment"}
+                                className="mt-2 rounded-md max-h-40"
+                              />
+                            )}
                           </div>
                         </div>
                       ))}
@@ -539,7 +578,30 @@ export default function SupportChat() {
                     className="cursor-pointer h-10 w-10"
                   /> */}
                   <div className="px-2 py-2 bg-[#E9ECF3] dark:bg-gray-700 w-full max-w-5xl rounded-3xl flex items-center gap-2">
-                    <Paperclip size={20} className="text-gray-500" />
+                    {attachedImagePreview && (
+                      <div className="relative">
+                        <img
+                          src={attachedImagePreview}
+                          alt="Attached"
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                        <button
+                          onClick={handleRemoveImage}
+                          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+                    <label className="cursor-pointer">
+                      <Paperclip size={20} className="text-gray-500" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </label>
                     <div className="bg-white dark:bg-gray-800 w-full rounded-3xl px-4 flex items-center justify-between">
                       <input
                         placeholder="Start chat"
@@ -559,7 +621,6 @@ export default function SupportChat() {
                           size={35}
                           className="text-gray-500 cursor-pointer md:hidden block"
                         />
-                        {/* <img src={voice} alt="Voice icon" className="h-5 w-5" /> */}
                       </div>
                     </div>
                     <button
