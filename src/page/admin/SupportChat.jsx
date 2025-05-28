@@ -202,14 +202,22 @@ export default function SupportChat() {
     if (!message.trim() && !selectedChat) return;
     const user_to_send = chats.find((chat) => chat.chat_id === chatId);
     console.log(user_to_send?.user);
+    // attachments
+    let attachment_name = null;
+    let attachment_data = null;
+    if (attachedImage) {
+      const [name, data] = attachedImage.split(",");
+      attachment_name = name;
+      attachment_data = data;
+    }
     chatWs.current.send(
       JSON.stringify({
         user_id: user_to_send?.user,
         message,
         main_chat_id: chatId,
         sender_type: "mentor",
-        attachment_data: attachedImage,
-        attachment_name: attachedImage ? "image.png" : null,
+        attachment_data,
+        attachment_name,
       })
     );
     try {
@@ -224,12 +232,14 @@ export default function SupportChat() {
           sender_type: "mentor",
           message: message,
           timestamp: new Date(),
-          attachment_data: attachedImage,
-          attachment_name: attachedImage ? "image.png" : null,
+          attachment_data,
+          attachment_name,
         },
       ]);
       setMessage("");
       setAttachedImage(null);
+      setAttachedImagePreview(null);
+      setAttachedImage("");
       setAttachedImagePreview(null);
     } catch (error) {
       console.error("Error sending message:", error);
@@ -546,13 +556,8 @@ export default function SupportChat() {
                             </p>
                             {msg.attachment_data && (
                               <img
-                                src={
-                                  msg.attachment_data.startsWith("data:image/")
-                                    ? msg.attachment_data
-                                    : `data:image/png;base64,${msg.attachment_data}`
-                                }
-                                alt={msg.attachment_name || "attachment"}
-                                className="mt-2 rounded-md max-h-40"
+                                src={`${msg.attachment_name},${msg.attachment_data}`}
+                                alt={msg.attachment_name}
                               />
                             )}
                           </div>

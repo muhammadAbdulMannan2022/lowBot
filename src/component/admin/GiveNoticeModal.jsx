@@ -1,22 +1,29 @@
 import { useState } from "react";
 import { FiArrowLeft, FiX } from "react-icons/fi";
+import axiosInstance from "../axiosInstance";
 
 const GiveNoticeModal = ({ isOpen, onClose, user }) => {
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-  });
+  const [formData, setFormData] = useState({ message: "" });
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Notice submitted for user:", user.name, formData);
-    onClose(); // Close the modal after submission
-    // Add your form submission logic here (e.g., API call)
+    setLoading(true);
+    try {
+      await axiosInstance.post(`/dashboard/user/management/${user.id}/`, {
+        message: formData.message,
+      });
+      onClose();
+    } catch (error) {
+      alert("Failed to send notice.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -49,29 +56,14 @@ const GiveNoticeModal = ({ isOpen, onClose, user }) => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Title */}
-          <div>
-            <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
-              Give a Title
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              placeholder="Enter here"
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
           {/* Description */}
           <div>
             <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
-              Describe here
+              Message
             </label>
             <textarea
-              name="description"
-              value={formData.description}
+              name="message"
+              value={formData.message}
               onChange={handleInputChange}
               placeholder="Enter here"
               rows="4"
@@ -83,8 +75,9 @@ const GiveNoticeModal = ({ isOpen, onClose, user }) => {
           <button
             type="submit"
             className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            disabled={loading}
           >
-            SUBMIT
+            {loading ? "Sending..." : "SUBMIT"}
           </button>
         </form>
       </div>

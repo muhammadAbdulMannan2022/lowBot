@@ -208,32 +208,34 @@ export default function UserMeetings() {
             </Card>
 
             <Card className="bg-white dark:bg-gray-800 dark:text-white">
-              <Link to={upcomingMeeting.link}>
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <h2 className="text-sm text-muted-foreground mb-1">
-                      Upcoming
-                    </h2>
-                    <p className="text-sm text-muted-foreground">Time</p>
-                  </div>
-                  <div className="flex justify-between items-center flex-wrap">
-                    <p className="font-medium text-blue-500">
-                      {upcomingMeeting
-                        ? `Meeting ID: ${upcomingMeeting.meeting_id}`
-                        : "No upcoming meeting"}
-                    </p>
-                    <p className="font-medium">
-                      {upcomingMeeting
-                        ? `${new Date(
-                            upcomingMeeting.date
-                          ).toLocaleDateString()} ${
-                            upcomingMeeting.meeting_time || "N/A"
-                          }`
-                        : "N/A"}
-                    </p>
-                  </div>
-                </CardContent>
-              </Link>
+              {upcomingMeeting && (
+                <Link to={upcomingMeeting.link}>
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-center">
+                      <h2 className="text-sm text-muted-foreground mb-1">
+                        Upcoming
+                      </h2>
+                      <p className="text-sm text-muted-foreground">Time</p>
+                    </div>
+                    <div className="flex justify-between items-center flex-wrap">
+                      <p className="font-medium text-blue-500">
+                        {upcomingMeeting
+                          ? `Meeting ID: ${upcomingMeeting.meeting_id}`
+                          : "No upcoming meeting"}
+                      </p>
+                      <p className="font-medium">
+                        {upcomingMeeting
+                          ? `${new Date(
+                              upcomingMeeting.date
+                            ).toLocaleDateString()} ${
+                              upcomingMeeting.meeting_time || "N/A"
+                            }`
+                          : "N/A"}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Link>
+              )}
             </Card>
           </div>
 

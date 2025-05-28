@@ -758,7 +758,7 @@ export default function ChatInterface() {
       if (data.main_chat_id === chatId) {
         console.log(data.message);
         const mess = {
-          id: receivedData.id,
+          id: receivedData.id || null,
           message: receivedData.message,
           attachment_name: receivedData.attachment_name || null,
           attachment_data: receivedData.attachment_data || null,
@@ -901,7 +901,14 @@ export default function ChatInterface() {
     // Find the mentor_id for the current chatId
     const mentor = mentorsId.find((mentor) => mentor.chat_id === chatId);
     const mentorId = mentor ? mentor.mentor_id : null;
-
+    // attachments
+    let attachment_name = null;
+    let attachment_data = null;
+    if (attachedImage) {
+      const [name, data] = attachedImage.split(",");
+      attachment_name = name;
+      attachment_data = data;
+    }
     console.log("Sending message:", { message, chatId, mentorId });
     // Send WebSocket message
     if (mentorId !== "" && typeof mentorId == "string") {
@@ -912,8 +919,8 @@ export default function ChatInterface() {
             message: message,
             main_chat_id: chatId,
             user_id: mentorId,
-            attachment_data: attachedImage,
-            attachment_name: attachedImage ? "image.png" : null,
+            attachment_data,
+            attachment_name,
           })
         );
         setMessages((prev) => [
@@ -923,10 +930,12 @@ export default function ChatInterface() {
             sender_type: "user",
             chat_id: chatId,
             main_chat_id: chatId,
-            attachment_data: attachedImage,
-            attachment_name: attachedImage ? "image.png" : null,
+            attachment_data,
+            attachment_name,
           },
         ]);
+        setAttachedImage(null);
+        setAttachedImagePreview(null);
       } else {
         console.error("WebSocket is not open");
         alert("Unable to send message: WebSocket connection is not open.");
@@ -1360,7 +1369,7 @@ export default function ChatInterface() {
                             </span>
                             {msg.attachment_data && (
                               <img
-                                src={`${msg.attachment_data}`}
+                                src={`${msg.attachment_name},${msg.attachment_data}`}
                                 alt={msg.attachment_name}
                               />
                             )}
@@ -1375,7 +1384,7 @@ export default function ChatInterface() {
                             </span>
                             {msg.attachment_data && (
                               <img
-                                src={`${msg.attachment_data}`}
+                                src={`${msg.attachment_name},${msg.attachment_data}`}
                                 alt={msg.attachment_name}
                               />
                             )}

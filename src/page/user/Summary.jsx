@@ -5,24 +5,24 @@ import axiosInstance from "../../component/axiosInstance";
 const SummaryModal = ({ isOpen, onClose, meetingId }) => {
   const [activeTab, setActiveTab] = useState("summary");
   const [loading, setLoading] = useState(false);
-  const [summary, setSummary] = useState("");
-  const [video, setVideo] = useState("");
+  const [summaries, setSummaries] = useState([]);
   const [error, setError] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     if (!isOpen || !meetingId) return;
     setLoading(true);
     setError("");
-    setSummary("");
-    setVideo("");
+    setSummaries([]);
     axiosInstance
       .get(`/zoom/meetings/summary/${meetingId}/`)
       .then((res) => {
         if (res.data.error) {
           setError(res.data.error);
+        } else if (Array.isArray(res.data)) {
+          setSummaries(res.data);
         } else {
-          setSummary(res.data.meeting_summary || "");
-          setVideo(res.data.meeting_video || "");
+          setSummaries([res.data]);
         }
       })
       .catch(() => {
@@ -33,6 +33,8 @@ const SummaryModal = ({ isOpen, onClose, meetingId }) => {
 
   if (!isOpen) return null;
 
+  const current = summaries[activeIndex] || {};
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
@@ -42,6 +44,25 @@ const SummaryModal = ({ isOpen, onClose, meetingId }) => {
         >
           <FiX size={22} />
         </button>
+        {/* Tabs for each summary/video */}
+        {summaries.length > 1 && (
+          <div className="flex justify-center mb-4 flex-wrap gap-2">
+            {summaries.map((_, idx) => (
+              <button
+                key={idx}
+                className={`px-3 py-1 rounded font-semibold border ${
+                  activeIndex === idx
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-gray-100 text-gray-700 border-gray-300"
+                }`}
+                onClick={() => setActiveIndex(idx)}
+              >
+                {`Session ${idx + 1}`}
+              </button>
+            ))}
+          </div>
+        )}
+        {/* Tab for summary/video */}
         <div className="flex justify-center mb-6">
           <button
             className={`px-4 py-2 rounded-t-lg font-semibold ${
@@ -70,14 +91,20 @@ const SummaryModal = ({ isOpen, onClose, meetingId }) => {
           ) : error ? (
             <div className="text-center text-red-500">{error}</div>
           ) : activeTab === "summary" ? (
-            summary ? (
-              <div className="whitespace-pre-line text-gray-800">{summary}</div>
+            current.meeting_summary ? (
+              <div className="whitespace-pre-line text-gray-800">
+                {current.meeting_summary}
+              </div>
             ) : (
               <div className="text-center text-gray-500">No summary found.</div>
             )
-          ) : video ? (
+          ) : current.meeting_video ? (
             <video
-              src={video}
+              src={
+                current.meeting_video.startsWith("http")
+                  ? current.meeting_video
+                  : `http://192.168.10.124:3100${current.meeting_video}`
+              }
               controls
               className="w-full max-h-[400px] rounded-lg bg-black"
             />
