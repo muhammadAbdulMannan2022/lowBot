@@ -14,6 +14,7 @@ import Logo from "../../assets/logo.svg";
 import { useAuth } from "../AuthContext";
 import ProfileModal from "./ProfileModal";
 import LogoutModal from "./LogoutModal";
+import axiosInstance from "../axiosInstance";
 
 const Sidebar = ({
   children,
@@ -34,6 +35,7 @@ const Sidebar = ({
   const [sideBarDropDown, setSideBarDropDown] = useState(false);
   const role = localStorage.getItem("role");
   const [profileVisible, setProfileVisible] = useState(false);
+  const [profile, setProfile] = useState({});
   // theme toggles
   const [theme, setTheme] = useState("system");
   const [isDark, setIsDark] = useState(false); // ⬅️ Added this
@@ -121,7 +123,17 @@ const Sidebar = ({
   const onClose = () => {
     setIsVisble(false);
   };
-
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axiosInstance.get("/auth/profile/");
+        setProfile(res.data);
+      } catch (error) {
+        setProfile(null);
+      }
+    };
+    fetchProfile();
+  }, []);
   return (
     <div className="flex flex-col min-h-screen">
       <nav className=" border-t-[20px] border-[#C3DAEF] fixed top-0 z-50 w-full bg-white shadow dark:bg-gray-900">
@@ -190,15 +202,24 @@ const Sidebar = ({
                       aria-expanded={isDropdownOpen}
                       onClick={() => setProfileVisible(!profileVisible)}
                     >
-                      <div className="rounded-full w-8 h-8 aspect-square object-cover border flex items-center justify-center text-xl uppercase bg-gray-200 dark:bg-gray-700">
-                        <FaUserCircle
-                          size={28}
-                          className="text-black dark:text-white"
-                        />
+                      <div className="rounded-full w-8 h-8 aspect-square object-cover border flex items-center justify-center text-xl uppercase bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                        {profile?.profile_picture ? (
+                          <img
+                            src={`http://192.168.10.124:3100${profile.profile_picture}`}
+                            alt="Profile"
+                            className="w-8 h-8 object-cover rounded-full"
+                          />
+                        ) : (
+                          <span className="text-gray-500">
+                            {profile?.first_name?.[0] || ""}
+                            {profile?.last_name?.[0] || ""}
+                          </span>
+                        )}
                       </div>
                     </button>
                     <h3 className="text-gray-800 dark:text-white">
-                      Ibrahim Khalil
+                      {(profile?.first_name || "") +
+                        (profile?.last_name ? " " + profile.last_name : "")}
                     </h3>
                   </div>
 

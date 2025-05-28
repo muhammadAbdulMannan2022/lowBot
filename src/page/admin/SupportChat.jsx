@@ -514,11 +514,11 @@ export default function SupportChat() {
 
               {selectedChat && (
                 <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t dark:border-gray-700 p-4 flex items-center justify-center gap-2 md:static md:bg-transparent md:border-t-0 md:p-4 z-20">
-                  <img
+                  {/* <img
                     src={videoMic}
                     alt="Video icon"
                     className="cursor-pointer h-10 w-10"
-                  />
+                  /> */}
                   <div className="px-2 py-2 bg-[#E9ECF3] dark:bg-gray-700 w-full max-w-5xl rounded-3xl flex items-center gap-2">
                     <Paperclip size={20} className="text-gray-500" />
                     <div className="bg-white dark:bg-gray-800 w-full rounded-3xl px-4 flex items-center justify-between">
@@ -540,7 +540,7 @@ export default function SupportChat() {
                           size={35}
                           className="text-gray-500 cursor-pointer md:hidden block"
                         />
-                        <img src={voice} alt="Voice icon" className="h-5 w-5" />
+                        {/* <img src={voice} alt="Voice icon" className="h-5 w-5" /> */}
                       </div>
                     </div>
                     <button

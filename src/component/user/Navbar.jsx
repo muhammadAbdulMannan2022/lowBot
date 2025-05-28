@@ -1,12 +1,14 @@
 import { Bell, ChevronRight } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import axiosInstance from "../axiosInstance";
 
 function Navbar() {
   const [theme, setTheme] = useState("system");
-  const [isDark, setIsDark] = useState(false); // ⬅️ Added this
+  const [isDark, setIsDark] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [profile, setProfile] = useState(null);
   const notifyWs = useRef(null);
   const token = localStorage.getItem("token");
   const location = useLocation();
@@ -28,10 +30,10 @@ function Navbar() {
 
     if (activeTheme === "dark") {
       document.documentElement.classList.add("dark");
-      setIsDark(true); // ⬅️ Set dark mode state
+      setIsDark(true);
     } else {
       document.documentElement.classList.remove("dark");
-      setIsDark(false); // ⬅️ Set light mode state
+      setIsDark(false);
     }
   }, [theme]);
 
@@ -69,7 +71,6 @@ function Navbar() {
     notifyWs.current.onclose = () => {
       console.log("Notification WebSocket closed");
     };
-    // console.log(notifications);
 
     return () => {
       if (notifyWs.current) {
@@ -77,6 +78,19 @@ function Navbar() {
       }
     };
   }, [token]);
+
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axiosInstance.get("/auth/profile/");
+        setProfile(res.data);
+      } catch (error) {
+        setProfile(null);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   return (
     <header className="bg-white dark:bg-gray-800 fixed z-40 top-0 border-t-[20px] w-full border-[#C3DAEF] py-2 px-4 flex justify-end items-center border-b dark:border-[#1e293b] transition-colors duration-300 md:justify-between">
@@ -102,19 +116,27 @@ function Navbar() {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <Link to={"/user-profile"} className="flex items-center gap-2">
           <Avatar className="w-8 h-8 border">
             <AvatarImage
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Desktop%20-%20489-uXtSfwFxEGp28xQRAlXpi6iTA8vhbf.png"
+              src={
+                profile?.profile_picture
+                  ? `http://192.168.10.124:3100${profile.profile_picture}`
+                  : undefined
+              }
               alt="User"
             />
-            <AvatarFallback>CM</AvatarFallback>
+            <AvatarFallback>
+              {profile?.first_name?.[0] || ""}
+              {profile?.last_name?.[0] || ""}
+            </AvatarFallback>
           </Avatar>
           <span className="font-medium text-gray-800 dark:text-white">
-            Cameron
+            {(profile?.first_name || "") +
+              (profile?.last_name ? " " + profile.last_name : "")}
           </span>
           <ChevronRight className="w-5 h-5 text-gray-500 dark:text-gray-300" />
-        </div>
+        </Link>
       </div>
     </header>
   );
