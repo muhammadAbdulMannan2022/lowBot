@@ -103,7 +103,7 @@ const SummaryModal = ({ isOpen, onClose, meetingId }) => {
               src={
                 current.meeting_video.startsWith("http")
                   ? current.meeting_video
-                  : `http://192.168.10.124:3100${current.meeting_video}`
+                  : `https://devidcyrus.duckdns.org${current.meeting_video}`
               }
               controls
               className="w-full max-h-[400px] rounded-lg bg-black"

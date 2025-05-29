@@ -47,7 +47,7 @@ export default function SupportChat() {
       if (!token || !chatId) return;
 
       chatWs.current = new WebSocket(
-        `ws://192.168.10.124:3100/ws/api/v1/chat/?Authorization=Bearer ${token}`
+        `ws://devidcyrus.duckdns.org/ws/api/v1/chat/?Authorization=Bearer ${token}`
       );
 
       chatWs.current.onopen = () => {

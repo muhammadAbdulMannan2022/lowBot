@@ -7,7 +7,7 @@ class WebSocketManager {
   connect({ route, token }) {
     if (this.socket) return; // Already connected
     this.socket = new WebSocket(
-      `ws://192.168.10.124:3100${route}?Authorization=Bearer ${token}`
+      `ws://devidcyrus.duckdns.org${route}?Authorization=Bearer ${token}`
     );
 
     this.socket.onopen = () => {
