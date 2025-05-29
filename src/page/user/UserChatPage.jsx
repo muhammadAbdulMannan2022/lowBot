@@ -690,7 +690,15 @@
 // }
 
 import { useState, useRef, useEffect } from "react";
-import { Paperclip, Plus, Video, Send, Minus, X } from "lucide-react";
+import {
+  Paperclip,
+  Plus,
+  Video,
+  Send,
+  Minus,
+  X,
+  BrainCircuit,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FiCheck, FiMic } from "react-icons/fi";
@@ -708,6 +716,7 @@ import SupportOptions from "../../components/support-options";
 import MettingOptions from "../../components/support-options-metting";
 import VoiceToVoiceChat from "../../component/user/VtoV";
 import SummaryModal from "./Summary";
+import AiModal from "./AiModal";
 
 export default function ChatInterface() {
   const [activeTab, setActiveTab] = useState("solved");
@@ -726,6 +735,7 @@ export default function ChatInterface() {
   const navigation = useNavigate();
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [summaryChatId, setSummaryChatId] = useState("");
+  const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   // mentros id
   const [mentorsId, setMentorsId] = useState([]);
   const route = useParams();
@@ -1553,6 +1563,19 @@ export default function ChatInterface() {
                   className="hidden"
                 />
               </label>
+              <label
+                className={`${
+                  chatId
+                    ? "cursor-pointer"
+                    : "cursor-not-allowed pointer-events-none"
+                }`}
+                onClick={() => setIsAiChatOpen(!isAiChatOpen)}
+              >
+                <BrainCircuit
+                  size={23}
+                  className="text-gray-500 dark:text-gray-300"
+                />
+              </label>
 
               <div className="bg-white dark:bg-gray-900 w-full rounded-3xl px-4 flex items-center justify-between">
                 <input
@@ -1586,6 +1609,14 @@ export default function ChatInterface() {
           </div>
         </div>
       </div>
+      {/* AI chat modal */}
+      <AiModal
+        isOpen={isAiChatOpen}
+        onClose={() => setIsAiChatOpen(false)}
+        mainChatId={chatId}
+        key={chatId}
+      />
+      {/*  */}
 
       <OnlineVideoModal
         isOpen={videoActive}
