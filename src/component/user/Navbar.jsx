@@ -52,7 +52,7 @@ function Navbar() {
   useEffect(() => {
     // WebSocket for notifications
     notifyWs.current = new WebSocket(
-      `ws://devidcyrus.duckdns.org/ws/api/v1/notification/?Authorization=Bearer ${token}`
+      `wss://devidcyrus.duckdns.org/ws/api/v1/notification/?Authorization=Bearer ${token}`
     );
 
     notifyWs.current.onopen = () => {
@@ -121,7 +121,7 @@ function Navbar() {
             <AvatarImage
               src={
                 profile?.profile_picture
-                  ? `https://devidcyrus.duckdns.org${profile.profile_picture}`
+                  ? `https://192.168.10.124:3100${profile.profile_picture}`
                   : undefined
               }
               alt="User"

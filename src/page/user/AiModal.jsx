@@ -47,6 +47,8 @@ const AiModal = ({ isOpen, onClose, mainChatId }) => {
   }, [messages]);
 
   const handleFileChange = (e) => {
+    setAttachedFile(null);
+    setAttachedPreview(null);
     const file = e.target.files[0];
     if (!file) return;
     setAttachedFile(file);
@@ -83,6 +85,8 @@ const AiModal = ({ isOpen, onClose, mainChatId }) => {
       fetchHistory(); // Refresh messages after sending
     } catch (err) {
       console.error("Error sending message:", err);
+    } finally {
+      handleRemoveFile();
     }
   };
 

@@ -77,7 +77,7 @@ function App() {
     // wsManager.addListener(chatRoute, handleMessage);
 
     chatWs.current = new WebSocket(
-      `ws://devidcyrus.duckdns.org/ws/api/v1/chat/?Authorization=Bearer ${token}`
+      `wss://devidcyrus.duckdns.org/ws/api/v1/chat/?Authorization=Bearer ${token}`
     );
 
     // next one

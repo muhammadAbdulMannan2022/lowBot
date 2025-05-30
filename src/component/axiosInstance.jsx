@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://192.168.10.124:3100/api",
-  // baseURL: "http://192.168.10.124:3100/api",
+  baseURL: "https://devidcyrus.duckdns.org/api",
+  // baseURL: "http://devidcyrus.duckdns.org/api",
 });
 axiosInstance.interceptors.request.use(
   async (config) => {

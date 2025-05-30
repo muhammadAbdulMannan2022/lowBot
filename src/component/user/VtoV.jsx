@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Mic, MicOff, X } from "lucide-react";
 
-const WS_URL = `ws://devidcyrus.duckdns.org/ws/api/v1/chat/ai_voice_chat/?Authorization=Beare ${localStorage.getItem(
+const WS_URL = `wss://devidcyrus.duckdns.org/ws/api/v1/chat/ai_voice_chat/?Authorization=Beare ${localStorage.getItem(
   "token"
 )}`;
 

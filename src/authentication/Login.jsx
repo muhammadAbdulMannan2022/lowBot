@@ -8,6 +8,7 @@ import { FaLinkedin } from "react-icons/fa";
 import Register from "../assets/register.svg";
 import axiosInstance from "../component/axiosInstance";
 import { useAuth } from "../component/AuthContext";
+import { signInWithGoogle } from "./firebaseAuth";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -199,6 +200,8 @@ export default function Login() {
 
             <div className="mt-6 flex gap-3">
               <Button
+                type="button"
+                onClick={() => signInWithGoogle(login, navigate, setError)}
                 variant="outline"
                 className="flex-1 border-gray-300 hover:bg-indigo-500 hover:text-white"
                 aria-label="Sign up with Google"

@@ -755,7 +755,7 @@ export default function ChatInterface() {
   useEffect(() => {
     console.log(token);
     chatWs.current = new WebSocket(
-      `ws://devidcyrus.duckdns.org/ws/api/v1/chat/?Authorization=Bearer ${token}`
+      `wss://devidcyrus.duckdns.org/ws/api/v1/chat/?Authorization=Bearer ${token}`
     );
     chatWs.current.onopen = () => {
       console.log("chat WebSocket connected user chat page");
@@ -765,22 +765,23 @@ export default function ChatInterface() {
       const data = JSON.parse(event.data);
       const receivedData = data.message;
       console.log(data.main_chat_id, chatId);
+      if (data.success) return;
       if (data.main_chat_id === chatId) {
         console.log(data.message);
         const mess = {
-          id: receivedData.id || null,
-          message: receivedData.message,
-          attachment_name: receivedData.attachment_name || null,
-          attachment_data: receivedData.attachment_data || null,
-          sender: receivedData.sender,
-          receiver: receivedData.receiver,
-          reply_to: receivedData.reply_to,
-          timestamp: receivedData.timestamp,
-          is_read: receivedData.is_read,
-          is_deleted: receivedData.is_deleted,
-          is_edited: receivedData.is_edited,
-          is_reported: receivedData.is_reported,
-          sender_type: receivedData.sender_type || "mentor",
+          id: receivedData?.id ?? null,
+          message: receivedData?.message ?? "",
+          attachment_name: receivedData?.attachment_name ?? null,
+          attachment_data: receivedData?.attachment_data ?? null,
+          sender: receivedData?.sender ?? null,
+          receiver: receivedData?.receiver ?? null,
+          reply_to: receivedData?.reply_to ?? null,
+          timestamp: receivedData?.timestamp ?? null,
+          is_read: receivedData?.is_read ?? false,
+          is_deleted: receivedData?.is_deleted ?? false,
+          is_edited: receivedData?.is_edited ?? false,
+          is_reported: receivedData?.is_reported ?? false,
+          sender_type: receivedData?.sender_type ?? "mentor",
         };
         setMessages((prev) => [...prev, mess]);
       }
@@ -793,7 +794,7 @@ export default function ChatInterface() {
     chatWs.current.onclose = () => {
       console.log("chat WebSocket closed");
       chatWs.current = new WebSocket(
-        `ws://devidcyrus.duckdns.org/ws/api/v1/chat/?Authorization=Bearer ${token}`
+        `wss://devidcyrus.duckdns.org/ws/api/v1/chat/?Authorization=Bearer ${token}`
       );
       chatWs.current.onopen = () => {
         console.log("chat WebSocket connected user chat page");
@@ -911,14 +912,7 @@ export default function ChatInterface() {
     // Find the mentor_id for the current chatId
     const mentor = mentorsId.find((mentor) => mentor.chat_id === chatId);
     const mentorId = mentor ? mentor.mentor_id : null;
-    // attachments
-    let attachment_name = null;
-    let attachment_data = null;
-    if (attachedImage) {
-      const [name, data] = attachedImage.split(",");
-      attachment_name = name;
-      attachment_data = data;
-    }
+
     console.log("Sending message:", { message, chatId, mentorId });
     // Send WebSocket message
     if (mentorId !== "" && typeof mentorId == "string") {
@@ -929,8 +923,8 @@ export default function ChatInterface() {
             message: message,
             main_chat_id: chatId,
             user_id: mentorId,
-            attachment_data,
-            attachment_name,
+            attachment_data: attachedImage,
+            attachment_name: attachedImage ? "image.png" : null,
           })
         );
         setMessages((prev) => [
@@ -940,8 +934,8 @@ export default function ChatInterface() {
             sender_type: "user",
             chat_id: chatId,
             main_chat_id: chatId,
-            attachment_data,
-            attachment_name,
+            attachment_data: attachedImage,
+            attachment_name: attachedImage ? "image.png" : null,
           },
         ]);
         setAttachedImage(null);
@@ -968,12 +962,15 @@ export default function ChatInterface() {
           message: "Please enter a title for this conversation?",
           sender_type: "bot",
         });
+        console.log("line 960");
 
         setChatId(newChatId);
         await axiosInstance.post(`/chats/${newChatId || chatId}/history/`, {
+          // get
           message: message,
           sender_type: "user",
         });
+        console.log("line 971");
         navigation(`/chat/${newChatId}`);
       }
 
@@ -985,11 +982,11 @@ export default function ChatInterface() {
       }
       console.log(mentor, mentor?.mentor_id);
       if (typeof mentor?.mentor_id != "string") {
-        await axiosInstance.post(`/chats/${chatId}/history/`, {
+        await axiosInstance.post(`/chats/${chatId || newChatId}/history/`, {
           message: message,
           sender_type: "user",
         });
-        await fetchChatHistory(chatId);
+        // await fetchChatHistory(chatId);
         await fetchChatHistory(chatId || newChatId);
       }
 
@@ -1008,7 +1005,7 @@ export default function ChatInterface() {
 
     setIsLoading(true);
     try {
-      await axiosInstance.post(`/chats/${chatId}/history/`, {
+      await axiosInstance.get(`/chats/${chatId}/history/`, {
         message: "Please choose the appropriate priority level.",
         sender_type: "bot",
       });
@@ -1034,7 +1031,7 @@ export default function ChatInterface() {
       fetchChatHistory(chatId);
     } catch (error) {
       console.error("Error saving priority:", error);
-      alert("An error occurred while saving the priority.");
+      // alert("An error occurred while saving the priority.");
     } finally {
       setIsLoading(false);
     }
@@ -1093,7 +1090,7 @@ export default function ChatInterface() {
 
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-white">
-      {console.log(messages)}
+      {/* {console.log(messages)} */}
       <Button
         variant="ghost"
         className="fixed top-20 -left-3 z-0 md:hidden"
@@ -1411,7 +1408,7 @@ export default function ChatInterface() {
                       </div>
                     ))}
 
-                    {messages.length === 2 && (
+                    {messages.length === 3 && (
                       <div className="flex flex-col gap-4">
                         <div className="flex flex-col items-center justify-center">
                           <p className="text-gray-700 dark:text-gray-300 mb-2">
@@ -1454,7 +1451,7 @@ export default function ChatInterface() {
                       </div>
                     )}
 
-                    {messages[0]?.chat.is_finding && (
+                    {messages[0]?.chat?.is_finding && (
                       <div className="flex flex-col items-center justify-center bg-slate-100 dark:bg-gray-800 p-2 rounded-md">
                         <p className="text-gray-700 dark:text-gray-300 mb-2 text-center">
                           Checking for available mentor's to support you. Please
@@ -1466,7 +1463,7 @@ export default function ChatInterface() {
 
                     {messages.length === 7 &&
                       !timeMettingShow &&
-                      messages[0].chat.is_finding === false &&
+                      messages[0].chat?.is_finding === false &&
                       messages[0].chat?.meetings.length === 0 && (
                         <div className="flex flex-col gap-4">
                           <SupportOptions

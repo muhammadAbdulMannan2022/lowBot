@@ -53,7 +53,7 @@ const Notifications = () => {
 
   return (
     <Sidebar>
-      <div className="h-[98vh] bg-gray-100 dark:bg-gray-900 ml-2 py-12 px-8">
+      <div className="h-[98vh] overflow-y-auto bg-gray-100 dark:bg-gray-900 ml-2 py-12 px-8">
         <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 text-center my-4">
           Notifications
         </h2>

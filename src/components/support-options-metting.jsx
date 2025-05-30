@@ -29,7 +29,7 @@ export default function MettingOptions({
         const res = await axiosInstance.post("/zoom/times/", {
           mentor_id: mentorId,
         });
-        setAvailableTimes(res.data.available_times || []);
+        setAvailableTimes(res.data.available_times.slice(0, 3) || []);
         setDate(res.data.date || "");
       } catch (error) {
         console.error("Error fetching available times:", error);
