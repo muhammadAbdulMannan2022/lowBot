@@ -2,7 +2,7 @@ import axios from "axios";
 
 const axiosInstance = axios.create({
   baseURL: "https://devidcyrus.duckdns.org/api",
-  // baseURL: "http://devidcyrus.duckdns.org/api",
+  // baseURL: "http://192.168.10.124:2100/api",
 });
 axiosInstance.interceptors.request.use(
   async (config) => {

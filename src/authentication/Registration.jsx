@@ -17,9 +17,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axiosInstance from "../component/axiosInstance";
 import { signUpWithLinkedIn } from "./Linkedin";
+import { useAuth } from "../component/AuthContext";
 
 export default function Registration() {
   const navigate = useNavigate();
+  const { login } = useAuth(); // Assuming you have a login function in your auth context
 
   const [formData, setFormData] = useState({
     email: "",
@@ -82,7 +84,7 @@ export default function Registration() {
   const handleGoogleSignUp = () => {
     // Use selected role or default to "user" (Learner)
     const role = formData.role || "user";
-    signUpWithGoogle(navigate, setError, role);
+    signUpWithGoogle(login, navigate, setError, role);
   };
 
   const handleChange = (name, value) => {

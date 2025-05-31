@@ -1227,7 +1227,13 @@ export default function ChatInterface() {
 
                             {isExpanded == chat.chat_id && (
                               <div className="py-2 mb-1 flex items-center gap-2">
-                                <div className="bg-blue-100 dark:bg-blue-900 shadow-md w-[50%] p-1 rounded-md flex items-center space-x-1 px-4 py-2">
+                                <div
+                                  onClick={() => {
+                                    setIsSummaryOpen(true);
+                                    setSummaryChatId(chat.chat_id);
+                                  }}
+                                  className="bg-blue-100 dark:bg-blue-900 shadow-md w-[50%] p-1 rounded-md flex space-x-1 items-center px-4 py-2"
+                                >
                                   <CgNotes className="w-4 h-4 text-gray-700 dark:text-white" />
                                   <span className="text-xs text-gray-800 dark:text-gray-200">
                                     Summary

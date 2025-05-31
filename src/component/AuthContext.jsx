@@ -21,6 +21,12 @@ export const AuthProvider = ({ children }) => {
 
   // Login function
   const login = (token, email, refresh_token, user_id) => {
+    console.log("Login called with:", {
+      token,
+      email,
+      refresh_token,
+      user_id,
+    });
     setAuth({ token, email, refresh_token, user_id });
     localStorage.setItem("token", token);
     localStorage.setItem("email", email);
