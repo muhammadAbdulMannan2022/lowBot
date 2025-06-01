@@ -717,6 +717,7 @@ import MettingOptions from "../../components/support-options-metting";
 import VoiceToVoiceChat from "../../component/user/VtoV";
 import SummaryModal from "./Summary";
 import AiModal from "./AiModal";
+import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
 
 export default function ChatInterface() {
   const [activeTab, setActiveTab] = useState("solved");
@@ -1350,7 +1351,18 @@ export default function ChatInterface() {
           )}
 
           {!voiceActive && (
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col">
+            <div className="flex-1 overflow-y-auto p-4 pt-0 flex flex-col">
+              <div className="flex items-center gap-4 md:hidden border-b border-gray-200 dark:border-gray-700 px-4 py-2 mb-2">
+                <button
+                  className="border rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800 hover:cursor-pointer"
+                  onClick={() => toggleChatHistory()}
+                >
+                  <MdKeyboardDoubleArrowLeft className="text-2xl" />
+                </button>
+                <h1 className="text-xl font-semibold py-2 text-gray-900 dark:text-white">
+                  Messages
+                </h1>
+              </div>
               <div
                 className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-100 scrollbar-track-gray-100"
                 style={{ maxHeight: "calc(100vh - 200px)" }}
