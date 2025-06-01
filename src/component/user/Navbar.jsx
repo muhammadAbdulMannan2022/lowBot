@@ -97,11 +97,11 @@ function Navbar() {
       {/* Dark Mode Toggle */}
       <button
         onClick={toggleTheme}
-        className="mr-4 w-14 h-8 flex items-center rounded-full bg-blue-600 dark:bg-blue-800 p-1 transition-colors duration-300"
+        className="mr-4 w-10 h-6 flex items-center rounded-full bg-blue-600 dark:bg-blue-800 transition-colors duration-300"
       >
         <div
-          className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ${
-            isDark ? "translate-x-6" : "translate-x-0"
+          className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
+            isDark ? "translate-x-5" : "translate-x-0"
           }`}
         />
       </button>
@@ -118,10 +118,11 @@ function Navbar() {
         </div>
         <Link to={"/user-profile"} className="flex items-center gap-2">
           <Avatar className="w-8 h-8 border">
-            <AvatarImage
+            {/* {console.log(profile)} */}
+            <img
               src={
                 profile?.profile_picture
-                  ? `https://192.168.10.124:3100${profile.profile_picture}`
+                  ? `https://devidcyrus.duckdns.org${profile.profile_picture}`
                   : undefined
               }
               alt="User"

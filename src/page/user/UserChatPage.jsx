@@ -773,7 +773,7 @@ export default function ChatInterface() {
           id: receivedData?.id ?? null,
           message: receivedData?.message ?? "",
           attachment_name: receivedData?.attachment_name ?? null,
-          attachment_data: receivedData?.attachment_data ?? null,
+          attachment_data: receivedData?.attachment ?? null,
           sender: receivedData?.sender ?? null,
           receiver: receivedData?.receiver ?? null,
           reply_to: receivedData?.reply_to ?? null,
@@ -1090,7 +1090,7 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-white">
+    <div className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-white relative">
       {/* {console.log(messages)} */}
       <Button
         variant="ghost"
@@ -1101,7 +1101,7 @@ export default function ChatInterface() {
         <img src={ChatSideBaIcon} alt="" className="h-10 w-10" />
       </Button>
       <Navbar />
-      <div className="flex flex-1 mt-16">
+      <div className="flex flex-1 absolute bottom-0 top-16">
         <Sidebar />
 
         {isChatHistoryOpen && (
@@ -1352,20 +1352,20 @@ export default function ChatInterface() {
 
           {!voiceActive && (
             <div className="flex-1 overflow-y-auto p-4 pt-0 flex flex-col">
-              <div className="flex items-center gap-4 md:hidden border-b border-gray-200 dark:border-gray-700 px-4 py-2 mb-2">
+              <div className="flex items-center gap-4 md:hidden border-b border-gray-200 dark:border-gray-700 px-2 py-1 mb-2">
                 <button
-                  className="border rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800 hover:cursor-pointer"
+                  className="border rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800 hover:cursor-pointer"
                   onClick={() => toggleChatHistory()}
                 >
                   <MdKeyboardDoubleArrowLeft className="text-2xl" />
                 </button>
-                <h1 className="text-xl font-semibold py-2 text-gray-900 dark:text-white">
+                <h1 className="text-md font-semibold py-2 text-gray-900 dark:text-white">
                   Messages
                 </h1>
               </div>
               <div
                 className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-100 scrollbar-track-gray-100"
-                style={{ maxHeight: "calc(100vh - 200px)" }}
+                style={{ maxHeight: "calc(100vh - 10rem)" }}
               >
                 {messages.length === 0 && (
                   <div className="max-w-md mx-auto text-center pt-20">
@@ -1407,6 +1407,9 @@ export default function ChatInterface() {
                             <span className="text-sm text-gray-800 dark:text-white">
                               {msg.message}
                             </span>
+                            {console.log(
+                              msg.attachment_name + "," + msg.attachment_data
+                            )}
                             {msg.attachment_data && (
                               <img
                                 src={`${msg.attachment_name},${msg.attachment_data}`}

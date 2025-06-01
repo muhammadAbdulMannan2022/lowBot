@@ -205,7 +205,7 @@ const Sidebar = ({
                       <div className="rounded-full w-8 h-8 aspect-square object-cover border flex items-center justify-center text-xl uppercase bg-gray-200 dark:bg-gray-700 overflow-hidden">
                         {profile?.profile_picture ? (
                           <img
-                            src={`https://192.168.10.124:3100${profile.profile_picture}`}
+                            src={`https://devidcyrus.duckdns.org${profile.profile_picture}`}
                             alt="Profile"
                             className="w-8 h-8 object-cover rounded-full"
                           />

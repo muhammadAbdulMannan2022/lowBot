@@ -447,7 +447,7 @@ export default function SupportChat() {
                       <div className="flex items-center gap-3">
                         <Avatar>
                           <img
-                            src={`http://127.0.0.1:8000${selectedChat?.user?.user_profile?.profile_picture}`}
+                            src={`https://devidcyrus.duckdns.org${selectedChat?.user?.user_profile?.profile_picture}`}
                             alt={
                               selectedChat.user?.user_profile?.first_name ||
                               "User"
@@ -538,7 +538,7 @@ export default function SupportChat() {
                             msg.sender_type !== "bot" && (
                               <Avatar className="mr-2 flex-shrink-0">
                                 <img
-                                  src={`http://127.0.0.1:8000${selectedChat?.user?.user_profile?.profile_picture}`}
+                                  src={`https://devidcyrus.duckdns.org${selectedChat?.user?.user_profile?.profile_picture}`}
                                   alt={selectedChat?.user?.username || "User"}
                                   className="h-8 w-8 rounded-full"
                                 />

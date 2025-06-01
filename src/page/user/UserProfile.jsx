@@ -72,7 +72,7 @@ export default function UserProfile() {
                   <img
                     src={
                       profile.profile_picture
-                        ? `https://192.168.10.124:3100${profile.profile_picture}`
+                        ? `https://devidcyrus.duckdns.org${profile.profile_picture}`
                         : "https://media.istockphoto.com/id/1289220545/photo/beautiful-woman-smiling-with-crossed-arms.jpg?s=612x612&w=0&k=20&c=qmOTkGstKj1qN0zPVWj-n28oRA6_BHQN8uVLIXg0TF8="
                     }
                     alt="Profile picture"
