@@ -3,19 +3,16 @@
 import { useState, useEffect } from "react";
 import { Mic, X } from "lucide-react";
 
-// Define SpeechRecognition type
-
-export default function VoiceInput({ setActive, setMessage, messages }) {
+export default function VoiceInput({ setActive, setMessage }) {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState("");
   const [isSupported, setIsSupported] = useState(true);
   const [recognition, setRecognition] = useState(null);
+
   useEffect(() => {
-    // Check if running in browser environment
     if (typeof window === "undefined") return;
 
-    // Check for SpeechRecognition API support
     const SpeechRecognitionAPI =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -25,11 +22,10 @@ export default function VoiceInput({ setActive, setMessage, messages }) {
       return;
     }
 
-    // Initialize SpeechRecognition
     const recognitionInstance = new SpeechRecognitionAPI();
     recognitionInstance.continuous = true;
     recognitionInstance.interimResults = true;
-    recognitionInstance.lang = "en-US"; // Set language (optional)
+    recognitionInstance.lang = "en-US";
 
     recognitionInstance.onresult = (event) => {
       const current = event.resultIndex;
@@ -39,7 +35,6 @@ export default function VoiceInput({ setActive, setMessage, messages }) {
     };
 
     recognitionInstance.onerror = (event) => {
-      console.error("Speech recognition error:", event.error);
       setError(`Error: ${event.error}`);
       setIsListening(false);
     };
@@ -49,16 +44,6 @@ export default function VoiceInput({ setActive, setMessage, messages }) {
     };
 
     setRecognition(recognitionInstance);
-
-    // Cleanup on unmount
-    return () => {
-      if (recognitionInstance) {
-        recognitionInstance.stop();
-      }
-      setTranscript("");
-      setError("");
-      setIsListening(false);
-    };
   }, []);
 
   const startListening = () => {
@@ -68,18 +53,12 @@ export default function VoiceInput({ setActive, setMessage, messages }) {
     try {
       recognition.start();
       setIsListening(true);
-    } catch (err) {
+    } catch {
       setError("Failed to start listening. Please try again.");
       setIsListening(false);
     }
   };
 
-  // start listening on component mount
-  useEffect(() => {
-    if (isSupported) {
-      startListening();
-    }
-  }, [isSupported]);
   const stopListening = () => {
     setMessage(transcript);
     setActive(false);
@@ -87,91 +66,82 @@ export default function VoiceInput({ setActive, setMessage, messages }) {
     try {
       recognition.stop();
       setIsListening(false);
-    } catch (err) {
+    } catch {
       setError("Failed to stop listening. Please try again.");
     }
   };
 
+  useEffect(() => {
+    if (recognition && isSupported) {
+      startListening();
+    }
+  }, [recognition, isSupported]);
+
   return (
-    <div className="flex h-[80vh] flex-col items-center justify-center">
-      {/* Main Voice Input Area */}
-      <div className="bg-gray-200 p-10 rounded-lg w-full max-w-md flex flex-col items-center justify-center min-h-[300px]">
+    <div className="flex h-[80vh] flex-col items-center justify-center px-4">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md flex flex-col items-center justify-center min-h-[320px]">
         {!isSupported ? (
-          <p className="text-red-500 text-sm text-center">
-            Speech Recognition is not supported in this browser. Please use a
-            supported browser like Chrome or Edge.
+          <p className="text-red-600 text-center text-sm">
+            Speech Recognition is not supported in this browser. Please use
+            Chrome or Edge.
           </p>
         ) : (
           <>
-            {/* Visual Feedback for Listening */}
             <div
-              className={
-                ("w-24 h-24 rounded-full bg-white flex items-center justify-center mb-6 transition-all",
-                isListening ? "animate-pulse border-4 border-blue-500" : "")
-              }
+              className={`w-24 h-24 rounded-full flex items-center justify-center mb-6 transition-all duration-300 ${
+                isListening
+                  ? "animate-pulse border-4 border-blue-500"
+                  : "border border-gray-300"
+              } bg-gray-100`}
             >
-              {transcript ? (
-                <span className="text-gray-400 text-xs overflow-hidden max-w-[80px] text-center">
-                  {transcript.substring(0, 20)}
-                  {transcript.length > 20 ? "..." : ""}
-                </span>
-              ) : (
-                <Mic className="text-gray-400" size={24} />
-              )}
+              <Mic className="text-gray-400" size={28} />
             </div>
 
-            {/* Status Text */}
-            <p className="text-gray-400 text-sm mb-6">
-              {isListening ? "Listening..." : "Start speaking to get started"}
+            <p className="text-gray-500 text-sm mb-4">
+              {isListening ? "Listening..." : "Tap the mic to start speaking"}
             </p>
 
-            {/* Error Message */}
             {error && (
               <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
             )}
 
-            {/* Control Buttons */}
-            <div className="flex space-x-2">
+            <div className="flex space-x-4">
               <button
                 onClick={startListening}
                 disabled={isListening || !isSupported}
-                className={
-                  ("rounded-full text-white focus:outline-none transition-colors",
+                className={`p-4 rounded-full transition-all ${
                   isListening || !isSupported
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-500 hover:bg-blue-600")
-                }
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                }`}
                 aria-label="Start voice input"
               >
-                <Mic size={30} color="white" />
+                <Mic size={28} />
               </button>
 
               <button
                 onClick={stopListening}
                 disabled={!isListening}
-                className={
-                  ("p-3 rounded-full text-white focus:outline-none transition-colors",
+                className={`p-4 rounded-full transition-all ${
                   !isListening
                     ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-gray-400 hover:bg-gray-500")
-                }
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                }`}
                 aria-label="Stop voice input"
               >
-                <X size={30} />
+                Stop
               </button>
             </div>
           </>
         )}
       </div>
 
-      {/* Transcript Display */}
       {transcript && (
-        <div
-          className="mt-6 p-4 bg-white rounded-lg shadow-sm w-full max-w-md"
-          aria-live="polite"
-        >
-          <h3 className="text-sm font-medium mb-2">Transcript:</h3>
-          <p className="text-gray-700">{transcript}</p>
+        <div className="mt-6 p-4 bg-white rounded-xl shadow w-full max-w-md">
+          <h3 className="text-sm font-semibold mb-2 text-gray-600">
+            Transcript:
+          </h3>
+          <p className="text-gray-800">{transcript}</p>
         </div>
       )}
     </div>

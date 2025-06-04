@@ -420,19 +420,21 @@ export default function SupportChat() {
                     }`}
                   >
                     <Avatar>
+                      {console.log(
+                        chat,
+                        ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
+                      )}
                       <img
-                        src={
-                          `https://devidcyrus.duckdns.org${chat?.user?.user_profile?.profile_picture}` ||
+                        src={`https://devidcyrus.duckdns.org${
+                          chat?.user?.user_profile?.profile_picture ||
                           chat.image
-                        }
+                        }`}
                         alt={chat?.user?.username || "User"}
                         className="h-10 w-10 rounded-full"
                       />
                     </Avatar>
                     <span className="text-sm md:text-base text-gray-900 dark:text-white">
-                      {chat?.user?.user_profile?.first_name ||
-                        chat?.username ||
-                        "Unknown User"}
+                      {chat?.username || chat?.user || "Unknown User"}
                     </span>
                   </Link>
                 ))}
@@ -447,7 +449,10 @@ export default function SupportChat() {
                       <div className="flex items-center gap-3">
                         <Avatar>
                           <img
-                            src={`https://devidcyrus.duckdns.org${selectedChat?.user?.user_profile?.profile_picture}`}
+                            src={`https://devidcyrus.duckdns.org${
+                              selectedChat?.user?.user_profile
+                                ?.profile_picture || selectedChat.image
+                            }`}
                             alt={
                               selectedChat.user?.user_profile?.first_name ||
                               "User"
@@ -457,6 +462,7 @@ export default function SupportChat() {
                         </Avatar>
                         <span className="text-sm md:text-base text-gray-900 dark:text-white">
                           {selectedChat.user?.user_profile?.first_name ||
+                            selectedChat.username ||
                             "Unknown User"}
                         </span>
                       </div>
@@ -538,7 +544,10 @@ export default function SupportChat() {
                             msg.sender_type !== "bot" && (
                               <Avatar className="mr-2 flex-shrink-0">
                                 <img
-                                  src={`https://devidcyrus.duckdns.org${selectedChat?.user?.user_profile?.profile_picture}`}
+                                  src={`https://devidcyrus.duckdns.org${
+                                    selectedChat?.user?.user_profile
+                                      ?.profile_picture || selectedChat.image
+                                  }`}
                                   alt={selectedChat?.user?.username || "User"}
                                   className="h-8 w-8 rounded-full"
                                 />

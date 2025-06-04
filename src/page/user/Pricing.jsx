@@ -5,6 +5,7 @@ import Navbar from "../../component/user/Navbar";
 import Sidebar from "../../component/user/UserSidebar";
 import { useState, useEffect } from "react";
 import axiosInstance from "../../component/axiosInstance";
+import { Link } from "react-router-dom";
 
 export default function PricingTable() {
   const [plans, setPlans] = useState([]);
@@ -119,11 +120,17 @@ export default function PricingTable() {
               </p>
             </div>
             <div className="text-center">
-              <p className="font-medium text-sm md:text-base text-gray-800 dark:text-gray-100">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Membership (Current)
               </p>
-              <p className="text-blue-600 dark:text-blue-400 text-sm md:text-base">
-                {currentPlan.plan?.name}
+              <p className="text-blue-600 dark:text-blue-400 text-sm md:text-base font-bold">
+                {currentPlan.plan === 1
+                  ? "Premium"
+                  : currentPlan.plan === 2
+                  ? "Pro"
+                  : currentPlan.plan === 3
+                  ? "Elite"
+                  : "Free"}
               </p>
             </div>
             <div className="text-center md:text-right">
@@ -134,6 +141,18 @@ export default function PricingTable() {
                 {formatDateToCustom(currentPlan.end_date)}
               </p>
             </div>
+            {currentPlan.auto_renew && (
+              <div className="text-center md:text-right">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Auto renew
+                </p>
+              </div>
+            )}
+            {currentPlan.plan !== 3 && (
+              <Link className="dark:text-white py-2 px-3 border rounded-md border-gray-800 dark:border-white">
+                upgrage now
+              </Link>
+            )}
           </div>
 
           {/* Pricing Cards */}
