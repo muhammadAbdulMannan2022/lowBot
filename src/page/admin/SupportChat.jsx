@@ -63,7 +63,7 @@ export default function SupportChat() {
             id: receivedData.id || "",
             message: receivedData.message,
             attachment_name: receivedData.attachment_name || null,
-            attachment_data: receivedData.attachment_data || null,
+            attachment: receivedData.attachment || null,
             sender: receivedData.sender,
             receiver: receivedData.receiver,
             reply_to: receivedData.reply_to,
@@ -204,11 +204,11 @@ export default function SupportChat() {
     console.log(user_to_send?.user);
     // attachments
     let attachment_name = null;
-    let attachment_data = null;
+    let attachment = null;
     if (attachedImage) {
       const [name, data] = attachedImage.split(",");
       attachment_name = name;
-      attachment_data = data;
+      attachment = data;
     }
     chatWs.current.send(
       JSON.stringify({
@@ -216,7 +216,7 @@ export default function SupportChat() {
         message,
         main_chat_id: chatId,
         sender_type: "mentor",
-        attachment_data,
+        attachment,
         attachment_name,
       })
     );
@@ -232,7 +232,7 @@ export default function SupportChat() {
           sender_type: "mentor",
           message: message,
           timestamp: new Date(),
-          attachment_data,
+          attachment,
           attachment_name,
         },
       ]);
@@ -320,7 +320,7 @@ export default function SupportChat() {
   return (
     <div className="flex flex-col h-screen bg-[#f0f7ff] dark:bg-gray-900">
       <Sidebar>
-        <div className="mt-10 rounded-lg bg-gray-50 dark:bg-gray-800 p-4 md:p-6">
+        <div className="mt-10 rounded-lg bg-gray-50 dark:bg-gray-800 p-4 md:p-6 h-[90vh] md:h-[93vh]">
           <div className="flex items-center gap-4">
             <img
               src={ChatSideBaIcon}
@@ -408,7 +408,7 @@ export default function SupportChat() {
                 )}
               </div>
 
-              <div className="overflow-y-auto md:h-[calc(100vh-25rem)] h-[calc(100vh-14rem)]">
+              <div className="overflow-y-auto max-h-[70vh]">
                 {filteredChats.map((chat) => (
                   <Link
                     to={`/supportchat/${chat.chat_id}`}
@@ -422,7 +422,7 @@ export default function SupportChat() {
                     <Avatar>
                       <img
                         src={
-                          `http://127.0.0.1:8000${chat?.user?.user_profile?.profile_picture}` ||
+                          `https://devidcyrus.duckdns.org${chat?.user?.user_profile?.profile_picture}` ||
                           chat.image
                         }
                         alt={chat?.user?.username || "User"}
@@ -554,9 +554,9 @@ export default function SupportChat() {
                             <p className="text-sm md:text-base">
                               {msg.message}
                             </p>
-                            {msg.attachment_data && (
+                            {msg.attachment && (
                               <img
-                                src={`${msg.attachment_name},${msg.attachment_data}`}
+                                src={`${msg.attachment_name},${msg.attachment}`}
                                 alt={msg.attachment_name}
                               />
                             )}

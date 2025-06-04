@@ -84,7 +84,7 @@ export default function Sidebar({
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 w-72 bg-gradient-to-b from-white to-blue-100 dark:from-gray-900 dark:to-gray-800 border-r dark:border-gray-600 flex flex-col px-5 h-screen transition-transform duration-300 ease-in-out md:z-0 z-40",
+          "fixed inset-y-0 left-0 w-72 bg-gradient-to-b from-white to-blue-100 dark:from-gray-900 dark:to-gray-800 border-r dark:border-gray-600 flex flex-col px-5 h-[90vh] transition-transform duration-300 ease-in-out md:z-0 z-40",
           isSidebarOpen ? "translate-x-0" : "-translate-x-full",
           "md:translate-x-0 md:static md:h-[93vh]"
         )}

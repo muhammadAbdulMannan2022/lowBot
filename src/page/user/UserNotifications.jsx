@@ -56,7 +56,7 @@ export default function UserNotifications() {
       <Navbar />
       <div className="flex mt-16">
         <Sidebar />
-        <div className="mx-auto md:w-[80%] h-[93vh] w-full bg-white dark:bg-gray-800 rounded-lg shadow-md max-h-[100vh] overflow-y-auto">
+        <div className="mx-auto h-[93vh] w-full bg-white dark:bg-gray-800 rounded-lg shadow-md max-h-[100vh] overflow-y-auto">
           <div className="py-10 px-4 md:px-6">
             <h1 className="text-2xl font-medium text-gray-800 dark:text-gray-100">
               Notifications

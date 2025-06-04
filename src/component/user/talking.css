@@ -1,0 +1,31 @@
+@keyframes wobble {
+  0% {
+    ry: 8;
+    rx: 8;
+  }
+  20% {
+    ry: 12;
+    rx: 7;
+  }
+  40% {
+    ry: 8;
+    rx: 10;
+  }
+  60% {
+    ry: 6;
+    rx: 12;
+  }
+  80% {
+    ry: 10;
+    rx: 7;
+  }
+  100% {
+    ry: 8;
+    rx: 8;
+  }
+}
+
+.wobble {
+  transform-origin: 50% 50%;
+  animation: wobble 1.2s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}

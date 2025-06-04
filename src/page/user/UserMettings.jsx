@@ -548,7 +548,7 @@ export default function UserMeetings() {
                           {completedMeetings.map((meeting) => (
                             <tr
                               key={meeting.meeting_id}
-                              className="border-b hover:bg-slate-50"
+                              className="border-b hover:bg-slate-50 dark:hover:bg-gray-700"
                             >
                               <td className="p-4 text-sm">
                                 {meeting.date

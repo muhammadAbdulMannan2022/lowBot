@@ -94,7 +94,7 @@ const AiModal = ({ isOpen, onClose, mainChatId }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 ">
-      <div className="bg-white rounded-lg shadow-lg h-[80vh] w-[60vw] flex flex-col relative">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg h-[80vh] w-[90vw] md:w-[60vw] flex flex-col relative">
         {/* Header */}
         <button
           onClick={onClose}
@@ -121,8 +121,8 @@ const AiModal = ({ isOpen, onClose, mainChatId }) => {
                 <div
                   className={`rounded-lg p-3 max-w-xs ${
                     msg.sender_type === "user"
-                      ? "bg-blue-100 text-right"
-                      : "bg-gray-100 text-left"
+                      ? "bg-blue-100 text-right dark:bg-gray-700"
+                      : "bg-gray-100 text-left dark:bg-blue-950"
                   }`}
                 >
                   {msg.message && <div className="mb-1">{msg.message}</div>}

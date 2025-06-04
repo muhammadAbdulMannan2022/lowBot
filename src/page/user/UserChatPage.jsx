@@ -773,7 +773,7 @@ export default function ChatInterface() {
           id: receivedData?.id ?? null,
           message: receivedData?.message ?? "",
           attachment_name: receivedData?.attachment_name ?? null,
-          attachment_data: receivedData?.attachment ?? null,
+          attachment: receivedData?.attachment ?? null,
           sender: receivedData?.sender ?? null,
           receiver: receivedData?.receiver ?? null,
           reply_to: receivedData?.reply_to ?? null,
@@ -918,14 +918,24 @@ export default function ChatInterface() {
     // Send WebSocket message
     if (mentorId !== "" && typeof mentorId == "string") {
       console.log("sending throught socket");
+      let attachment;
+      let attachment_name;
+      if (attachedImage) {
+        const [prefix, data] = attachedImage.split(",");
+        attachment_name = prefix; // <-- this is the data URL prefix
+        attachment = data;
+      } else {
+        attachment_name = null;
+        attachment = null;
+      }
       if (chatWs.current && chatWs.current.readyState === WebSocket.OPEN) {
         chatWs.current.send(
           JSON.stringify({
             message: message,
             main_chat_id: chatId,
             user_id: mentorId,
-            attachment_data: attachedImage,
-            attachment_name: attachedImage ? "image.png" : null,
+            attachment,
+            attachment_name,
           })
         );
         setMessages((prev) => [
@@ -935,8 +945,8 @@ export default function ChatInterface() {
             sender_type: "user",
             chat_id: chatId,
             main_chat_id: chatId,
-            attachment_data: attachedImage,
-            attachment_name: attachedImage ? "image.png" : null,
+            attachment,
+            attachment_name,
           },
         ]);
         setAttachedImage(null);
@@ -1092,16 +1102,16 @@ export default function ChatInterface() {
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-gray-900 dark:text-white relative">
       {/* {console.log(messages)} */}
-      <Button
+      {/* <Button
         variant="ghost"
         className="fixed top-20 -left-3 z-0 md:hidden"
         onClick={toggleChatHistory}
         aria-label="Toggle Chat History"
       >
         <img src={ChatSideBaIcon} alt="" className="h-10 w-10" />
-      </Button>
+      </Button> */}
       <Navbar />
-      <div className="flex flex-1 absolute bottom-0 top-16">
+      <div className="flex flex-1 absolute bottom-0 w-screen">
         <Sidebar />
 
         {isChatHistoryOpen && (
@@ -1337,9 +1347,9 @@ export default function ChatInterface() {
           </div>
         </div>
 
-        <div className="flex-1 relative flex flex-col bg-white dark:bg-gray-900 md:pl-[2rem]">
+        <div className="flex-1 relative flex flex-col h-[92vh] bg-white dark:bg-gray-900 md:pl-[2rem]">
           {messages[0]?.chat?.status === "UNSOLVED" && (
-            <div className="p-3 absolute top-3 right-2 flex justify-end">
+            <div className="p-3 absolute top-0 right-2 flex justify-end">
               <Button
                 className="bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center gap-2"
                 onClick={handleMark}
@@ -1392,9 +1402,9 @@ export default function ChatInterface() {
                             <span className="text-sm text-gray-800 dark:text-white">
                               {msg.message}
                             </span>
-                            {msg.attachment_data && (
+                            {msg.attachment && (
                               <img
-                                src={`${msg.attachment_name},${msg.attachment_data}`}
+                                src={`${msg.attachment_name},${msg.attachment}`}
                                 alt={msg.attachment_name}
                               />
                             )}
@@ -1407,12 +1417,12 @@ export default function ChatInterface() {
                             <span className="text-sm text-gray-800 dark:text-white">
                               {msg.message}
                             </span>
-                            {console.log(
-                              msg.attachment_name + "," + msg.attachment_data
-                            )}
-                            {msg.attachment_data && (
+                            {/* {console.log(
+                              msg.attachment_name + "," + msg.attachment
+                            )} */}
+                            {msg.attachment && (
                               <img
-                                src={`${msg.attachment_name},${msg.attachment_data}`}
+                                src={`${msg.attachment_name},${msg.attachment}`}
                                 alt={msg.attachment_name}
                               />
                             )}
