@@ -64,12 +64,6 @@ const UserManagement = () => {
     setDropdownIndex(dropdownIndex === index ? null : index);
   };
 
-  const handleDeleteAccount = (user) => {
-    console.log(`Deleting account for user: ${user.name}`);
-    // Add your delete account logic here (e.g., API call)
-    setDropdownIndex(null);
-  };
-
   const handleGiveNotice = (user) => {
     setSelectedUser(user);
     setIsGiveNoticeModalOpen(true);
@@ -194,14 +188,6 @@ const UserManagement = () => {
                           ref={(el) => (dropdownRefs.current[index] = el)}
                           className="absolute right-0 top-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 w-48"
                         >
-                          <button
-                            onClick={() => handleDeleteAccount(user)}
-                            className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left text-xs md:text-sm"
-                            aria-label={`Delete account for ${user.email}`}
-                          >
-                            <FiTrash2 className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-300" />
-                            Delete Account
-                          </button>
                           <button
                             onClick={() => handleGiveNotice(user)}
                             className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left text-xs md:text-sm"

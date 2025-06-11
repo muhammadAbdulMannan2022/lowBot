@@ -22,6 +22,8 @@ import UserEditProfile from "./page/user/UserEditProfile";
 import UserMettings from "./page/user/UserMettings";
 import UserNotifications from "./page/user/UserNotifications";
 import wsManager from "./socket/socket";
+import PrivateRoute from "./private/Private";
+import AdminPrivate from "./private/AdminPrivate";
 
 function App() {
   const [theme, setTheme] = useState("system");
@@ -113,19 +115,103 @@ function App() {
         <Route path="/forget-password" element={<ForgetEmail />} />
         <Route path="/otp-verification" element={<OtpVerification />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/dashboard" element={<UserManagement />} />
-        <Route path="/notification" element={<Notifications />} />
-        <Route path="/user-notification" element={<UserNotifications />} />
-        <Route path="/chat" element={<UserChatPage />} />
-        <Route path="/chat/:id" element={<UserChatPage />} />
-        <Route path="/supportchat" element={<SupportChat />} />
-        <Route path="/supportchat/:id" element={<SupportChat />} />
-        <Route path="/mettings" element={<MeetingDashboard />} />
-        <Route path="/user-mettings" element={<UserMettings />} />
+        <Route
+          path="/dashboard"
+          element={
+            <AdminPrivate>
+              <UserManagement />
+            </AdminPrivate>
+          }
+        />
+        <Route
+          path="/notification"
+          element={
+            <AdminPrivate>
+              <Notifications />
+            </AdminPrivate>
+          }
+        />
+        <Route
+          path="/user-notification"
+          element={
+            <PrivateRoute>
+              <UserNotifications />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <PrivateRoute>
+              <UserChatPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/chat/:id"
+          element={
+            <PrivateRoute>
+              <UserChatPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/supportchat"
+          element={
+            <AdminPrivate>
+              <SupportChat />
+            </AdminPrivate>
+          }
+        />
+        <Route
+          path="/supportchat/:id"
+          element={
+            <AdminPrivate>
+              <SupportChat />
+            </AdminPrivate>
+          }
+        />
+        <Route
+          path="/mettings"
+          element={
+            <AdminPrivate>
+              <MeetingDashboard />
+            </AdminPrivate>
+          }
+        />
+        <Route
+          path="/user-mettings"
+          element={
+            <PrivateRoute>
+              <UserMettings />
+            </PrivateRoute>
+          }
+        />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/user-profile" element={<UserProfile />} />
-        <Route path="/edit-profile" element={<EditProfileForm />} />
-        <Route path="/user-edit-profile" element={<UserEditProfile />} />
+        <Route
+          path="/user-profile"
+          element={
+            <PrivateRoute>
+              <UserProfile />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/edit-profile"
+          element={
+            <AdminPrivate>
+              <EditProfileForm />
+            </AdminPrivate>
+          }
+        />
+        <Route
+          path="/user-edit-profile"
+          element={
+            <PrivateRoute>
+              <UserEditProfile />
+            </PrivateRoute>
+          }
+        />
         <Route path="/membership" element={<PricingTable />} />
       </Routes>
     </BrowserRouter>

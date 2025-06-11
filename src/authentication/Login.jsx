@@ -40,13 +40,14 @@ export default function Login() {
       });
 
       if (response.status === 200) {
+        console.log(response.data.profile.user);
         login(
           response.data.access_token,
           formData.email,
           response.data.refresh_token,
-          response.data.user_id
+          response.data.user_id,
+          response.data.profile.user.role
         ); // Assuming your login function takes a token
-
         if (response.data.profile.user.role === "user") {
           navigate("/chat");
         } else {

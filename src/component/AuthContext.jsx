@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   });
 
   // Login function
-  const login = (token, email, refresh_token, user_id) => {
+  const login = (token, email, refresh_token, user_id, role) => {
     console.log("Login called with:", {
       token,
       email,
@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("email", email);
     localStorage.setItem("refresh_token", refresh_token);
     localStorage.setItem("id", user_id);
+    localStorage.setItem("role", role);
   };
 
   // Logout function
@@ -41,6 +42,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("email");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("id");
+    localStorage.removeItem("role");
   };
 
   // Check if user is authenticated

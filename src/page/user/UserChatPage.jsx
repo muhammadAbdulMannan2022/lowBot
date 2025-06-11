@@ -1618,7 +1618,7 @@ export default function ChatInterface() {
                 <div className="flex items-center gap-2">
                   <FiMic
                     size={20}
-                    className="text-gray-500 dark:text-gray-300 cursor-pointer"
+                    className="text-gray-500 dark:text-gray-300 cursor-pointer max-w-10 w-8"
                     onClick={() => setVoiceActive(!voiceActive)}
                   />
                   <img

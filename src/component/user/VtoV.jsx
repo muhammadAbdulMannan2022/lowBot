@@ -148,7 +148,9 @@ const VoiceToVoiceChat = ({ chatId, isVToVActive, setActive }) => {
                 : "bg-green-100 hover:bg-green-200 hover:cursor-pointer"
             }
             text-white shadow-lg`}
-          onClick={() => speaking && handleManualStop()}
+          onClick={() => {
+            speaking && handleManualStop();
+          }}
         >
           {/* Show Talking animation for both states */}
           {listening || speaking ? (
@@ -166,8 +168,13 @@ const VoiceToVoiceChat = ({ chatId, isVToVActive, setActive }) => {
             </>
           ) : (
             <>
-              <MicOff className="w-10 h-10 text-gray-400" />
-              <div className="mt-2 text-base text-gray-500">Waiting...</div>
+              {/* <MicOff className="w-10 h-10 text-gray-400" /> */}
+              <div
+                onClick={startVoiceRecognition()}
+                className="mt-2 text-base text-gray-500"
+              >
+                Listening...
+              </div>
             </>
           )}
         </div>
