@@ -108,14 +108,14 @@ function Navbar() {
 
       {/* Notification + User Info */}
       <div className="flex items-center gap-4">
-        <div className="relative">
+        <Link to="/user-notification" className="relative">
           <Bell className="w-5 h-5 text-gray-600 dark:text-gray-200" />
           {notifications.length > 0 && (
             <div className="absolute w-5 h-5 flex items-center justify-center bg-blue-400 text-white rounded-full -top-2 -right-2 text-xs">
               {notifications.length > 9 ? "9+" : notifications.length}
             </div>
           )}
-        </div>
+        </Link>
         <Link to={"/user-profile"} className="flex items-center gap-2">
           <Avatar className="w-8 h-8 border">
             {/* {console.log(profile)} */}

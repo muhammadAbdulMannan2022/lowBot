@@ -1555,7 +1555,7 @@ export default function ChatInterface() {
               chatId={chatId}
             />
           )}
-          <div className="w-full flex items-center justify-center mb-4 gap-2 px-4">
+          <div className="w-full flex items-center justify-center mb-20 md:mb-4 gap-2 px-4">
             <img
               src={videoMic}
               alt="Video icon"

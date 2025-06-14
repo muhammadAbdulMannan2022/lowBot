@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect, useRef } from "react";
 import { X, Mic, Volume2 } from "lucide-react";
 
@@ -7,56 +5,23 @@ const WS_URL = `wss://devidcyrus.duckdns.org/ws/api/v1/chat/ai_voice_chat/?Autho
   typeof window !== "undefined" ? localStorage.getItem("token") : ""
 }`;
 
-// Talking Animation Component
-const Talking = () => {
-  return (
-    <div className="flex items-center justify-center space-x-1">
-      <div
-        className="w-3 h-10 bg-white/90 rounded-full animate-bounce shadow-lg"
-        style={{ animationDelay: "0ms" }}
-      />
-      <div
-        className="w-3 h-16 bg-white/95 rounded-full animate-bounce shadow-lg"
-        style={{ animationDelay: "150ms" }}
-      />
-      <div
-        className="w-3 h-8 bg-white/90 rounded-full animate-bounce shadow-lg"
-        style={{ animationDelay: "300ms" }}
-      />
-      <div
-        className="w-3 h-14 bg-white/95 rounded-full animate-bounce shadow-lg"
-        style={{ animationDelay: "450ms" }}
-      />
-      <div
-        className="w-3 h-12 bg-white/90 rounded-full animate-bounce shadow-lg"
-        style={{ animationDelay: "600ms" }}
-      />
-      <div
-        className="w-3 h-6 bg-white/85 rounded-full animate-bounce shadow-lg"
-        style={{ animationDelay: "750ms" }}
-      />
-    </div>
-  );
-};
-
 export default function VoiceChatPage({ isVToVActive, setActive }) {
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false); // Track if we've started the conversation
+  const [hasStarted, setHasStarted] = useState(false);
   const ws = useRef(null);
   const recognitionRef = useRef(null);
+  const speakingRef = useRef(false); // NEW
   const chatId = "voice_chat_session";
 
   const startVoiceRecognition = () => {
-    // Don't start if already listening or speaking
-    if (listening || speaking) return;
+    if (listening || speakingRef.current) return;
 
     window.speechSynthesis.cancel();
 
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
-
     if (!SpeechRecognition) {
       alert("Speech recognition is not supported in this browser.");
       return;
@@ -70,16 +35,18 @@ export default function VoiceChatPage({ isVToVActive, setActive }) {
     recognition.onstart = () => setListening(true);
     recognition.onerror = (event) => {
       setListening(false);
-      // Auto-retry on error (except abort)
-      if (event.error !== "aborted" && isVToVActive && !speaking) {
+      if (event.error !== "aborted" && isVToVActive && !speakingRef.current) {
         setTimeout(() => startVoiceRecognition(), 1000);
       }
     };
     recognition.onend = () => setListening(false);
 
     recognition.onspeechstart = () => {
-      window.speechSynthesis.cancel();
-      setSpeaking(false);
+      if (speakingRef.current && window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        speakingRef.current = false;
+        setSpeaking(false);
+      }
     };
 
     recognition.onresult = (event) => {
@@ -102,13 +69,11 @@ export default function VoiceChatPage({ isVToVActive, setActive }) {
 
   const handleManualStop = () => {
     window.speechSynthesis.cancel();
+    speakingRef.current = false;
     setSpeaking(false);
-    setTimeout(() => {
-      startVoiceRecognition();
-    }, 100);
+    setTimeout(() => startVoiceRecognition(), 100);
   };
 
-  // WebSocket setup with improved initial handling
   useEffect(() => {
     if (!isVToVActive) return;
     ws.current = new WebSocket(WS_URL);
@@ -116,13 +81,12 @@ export default function VoiceChatPage({ isVToVActive, setActive }) {
     ws.current.onopen = () => {
       ws.current.send(JSON.stringify({ type: "subscribe", chat_id: chatId }));
       setIsReady(true);
-      // Don't auto-start listening here - wait for first message or timeout
     };
 
     ws.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.message) {
-        setHasStarted(true); // Mark that conversation has started
+        setHasStarted(true);
 
         const utterance = new window.SpeechSynthesisUtterance(data.message);
         utterance.lang = "en-US";
@@ -130,18 +94,30 @@ export default function VoiceChatPage({ isVToVActive, setActive }) {
         utterance.pitch = 1.0;
         utterance.volume = 0.9;
 
-        utterance.onstart = () => setSpeaking(true);
+        utterance.onstart = () => {
+          speakingRef.current = true;
+          setSpeaking(true);
+        };
         utterance.onend = () => {
+          speakingRef.current = false;
           setSpeaking(false);
-          // Always restart listening after AI finishes speaking
           setTimeout(() => {
             if (isVToVActive) {
               startVoiceRecognition();
             }
           }, 200);
         };
+        utterance.onerror = (err) => {
+          console.warn("Speech synthesis error:", err);
+          speakingRef.current = false;
+          setSpeaking(false);
+          setTimeout(() => {
+            if (isVToVActive) {
+              startVoiceRecognition();
+            }
+          }, 300);
+        };
 
-        // Cancel any ongoing recognition before speaking
         if (recognitionRef.current) {
           recognitionRef.current.abort();
         }
@@ -162,43 +138,77 @@ export default function VoiceChatPage({ isVToVActive, setActive }) {
     };
 
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
-      }
-      if (ws.current) {
-        ws.current.close();
-      }
+      if (recognitionRef.current) recognitionRef.current.abort();
+      if (ws.current) ws.current.close();
       window.speechSynthesis.cancel();
     };
   }, [chatId, isVToVActive]);
 
-  // Auto-start listening logic - improved to handle initial state
   useEffect(() => {
     if (!isVToVActive || !isReady) return;
 
-    // If we haven't started conversation yet, wait a bit then start listening
-    if (!hasStarted && !listening && !speaking) {
-      const timer = setTimeout(() => {
-        startVoiceRecognition();
-      }, 1000); // Give time for welcome message
+    if (!hasStarted && !listening && !speakingRef.current) {
+      const timer = () => startVoiceRecognition();
       return () => clearTimeout(timer);
     }
 
-    // For ongoing conversation, restart listening if not speaking
-    if (hasStarted && !speaking && !listening) {
-      const timer = setTimeout(() => {
-        startVoiceRecognition();
-      }, 300);
+    if (hasStarted && !speakingRef.current && !listening) {
+      const timer = () => startVoiceRecognition();
       return () => clearTimeout(timer);
     }
 
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
-      }
+      if (recognitionRef.current) recognitionRef.current.abort();
     };
   }, [isVToVActive, isReady, hasStarted, speaking, listening]);
+  useEffect(() => {
+    // Request mic permission on mount
+    const requestMicrophoneAccess = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        stream.getTracks().forEach((track) => track.stop()); // stop it right after
+      } catch (err) {
+        console.error("Microphone access denied:", err);
+        alert("Microphone access denied");
+      }
+    };
 
+    requestMicrophoneAccess();
+  }, []);
+
+  // Talking Animation Component
+  const Talking = () => {
+    return (
+      <div className="flex items-center justify-center space-x-1">
+        <div
+          className="w-3 h-10 bg-white/90 rounded-full animate-bounce shadow-lg"
+          style={{ animationDelay: "0ms" }}
+        />
+        <div
+          className="w-3 h-16 bg-white/95 rounded-full animate-bounce shadow-lg"
+          style={{ animationDelay: "150ms" }}
+        />
+        <div
+          className="w-3 h-8 bg-white/90 rounded-full animate-bounce shadow-lg"
+          style={{ animationDelay: "300ms" }}
+        />
+        <div
+          className="w-3 h-14 bg-white/95 rounded-full animate-bounce shadow-lg"
+          style={{ animationDelay: "450ms" }}
+        />
+        <div
+          className="w-3 h-12 bg-white/90 rounded-full animate-bounce shadow-lg"
+          style={{ animationDelay: "600ms" }}
+        />
+        <div
+          className="w-3 h-6 bg-white/85 rounded-full animate-bounce shadow-lg"
+          style={{ animationDelay: "750ms" }}
+        />
+      </div>
+    );
+  };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-all duration-500">
       {/* Enhanced Background Pattern */}
@@ -306,14 +316,6 @@ export default function VoiceChatPage({ isVToVActive, setActive }) {
                 <>
                   <div className="relative">
                     <Talking />
-                    {/* Icon Overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      {listening ? (
-                        <Mic className="w-14 h-14 text-white/90 drop-shadow-lg" />
-                      ) : (
-                        <Volume2 className="w-14 h-14 text-white/90 drop-shadow-lg" />
-                      )}
-                    </div>
                   </div>
                   <div className="text-white font-bold text-2xl drop-shadow-md">
                     {speaking ? "Speaking" : "Listening"}
