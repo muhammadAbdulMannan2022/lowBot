@@ -24,6 +24,7 @@ import UserNotifications from "./page/user/UserNotifications";
 import wsManager from "./socket/socket";
 import PrivateRoute from "./private/Private";
 import AdminPrivate from "./private/AdminPrivate";
+import UserPrivate from "./private/UserPrivate";
 
 function App() {
   const [theme, setTheme] = useState("system");
@@ -110,8 +111,22 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/signup" element={<RegistrationPage />} />
+        <Route
+          path="/"
+          element={
+            <UserPrivate>
+              <Login />
+            </UserPrivate>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <UserPrivate>
+              <RegistrationPage />
+            </UserPrivate>
+          }
+        />
         <Route path="/forget-password" element={<ForgetEmail />} />
         <Route path="/otp-verification" element={<OtpVerification />} />
         <Route path="/reset-password" element={<ResetPassword />} />

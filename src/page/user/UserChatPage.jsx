@@ -690,6 +690,7 @@
 // }
 
 import { useState, useRef, useEffect } from "react";
+import { IoVideocam } from "react-icons/io5";
 import {
   Paperclip,
   Plus,
@@ -1556,12 +1557,12 @@ export default function ChatInterface() {
             />
           )}
           <div className="w-full flex items-center justify-center mb-20 md:mb-4 gap-2 px-4">
-            <img
-              src={videoMic}
-              alt="Video icon"
+            <div
               onClick={() => setVideoActive(true)}
-              className="cursor-pointer h-10 w-10"
-            />
+              className=" h-10 w-12 cursor-pointer flex items-center justify-center bg-gray-700 rounded-full"
+            >
+              <IoVideocam className="cursor-pointer h-6 w-6" />
+            </div>
 
             <div className="px-2 py-2 border-t dark:border-gray-600 bg-[#E9ECF3] dark:bg-gray-800 w-full max-w-6xl rounded-3xl flex items-center gap-2">
               {attachedImagePreview && (
