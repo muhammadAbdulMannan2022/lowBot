@@ -46,8 +46,10 @@ export default function Login() {
           formData.email,
           response.data.refresh_token,
           response.data.user_id,
-          response.data.profile.user.role
+          response.data.profile.user.role,
+          response.data.access_token
         ); // Assuming your login function takes a token
+        // console.log(response.data.access_token);
         if (response.data.profile.user.role === "user") {
           navigate("/chat");
         } else {

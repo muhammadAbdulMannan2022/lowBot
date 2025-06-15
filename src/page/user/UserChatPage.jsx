@@ -1559,7 +1559,7 @@ export default function ChatInterface() {
           <div className="w-full flex items-center justify-center mb-20 md:mb-4 gap-2 px-4">
             <div
               onClick={() => setVideoActive(true)}
-              className=" h-10 w-12 cursor-pointer flex items-center justify-center bg-gray-700 rounded-full"
+              className=" h-10 w-12 cursor-pointer flex items-center justify-center bg-gray-400 dark:bg-gray-700 rounded-full text-white dark:text-gray-400 "
             >
               <IoVideocam className="cursor-pointer h-6 w-6" />
             </div>

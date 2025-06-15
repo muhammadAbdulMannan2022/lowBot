@@ -183,7 +183,10 @@ const AiModal = ({ isOpen, onClose, mainChatId }) => {
 
           <div className="px-4 flex items-center gap-2">
             <label className="cursor-pointer">
-              <FiPaperclip size={20} className="text-gray-500" />
+              <FiPaperclip
+                size={20}
+                className="text-gray-500 dark:text-gray-300"
+              />
               <input
                 type="file"
                 accept={SUPPORTED_FILE_TYPES.join(",")}
@@ -191,17 +194,23 @@ const AiModal = ({ isOpen, onClose, mainChatId }) => {
                 className="hidden"
               />
             </label>
+
             <input
               type="text"
-              className="flex-1 border rounded-3xl px-3 py-2 text-sm outline-none"
+              className="flex-1 border rounded-3xl px-3 py-2 text-sm outline-none 
+               text-black dark:text-white 
+               bg-white dark:bg-gray-800 
+               border-gray-300 dark:border-gray-600"
               placeholder="Type your message..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
             />
+
             <button
               onClick={handleSend}
-              className="bg-blue-600 text-white rounded-full p-2 hover:bg-blue-700"
+              className="bg-blue-600 text-white rounded-full p-2 hover:bg-blue-700 
+               dark:bg-blue-500 dark:hover:bg-blue-600"
             >
               <FiSend size={20} />
             </button>

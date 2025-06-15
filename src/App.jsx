@@ -25,6 +25,7 @@ import wsManager from "./socket/socket";
 import PrivateRoute from "./private/Private";
 import AdminPrivate from "./private/AdminPrivate";
 import UserPrivate from "./private/UserPrivate";
+import UserOnly from "./private/OnlyUser";
 
 function App() {
   const [theme, setTheme] = useState("system");
@@ -133,98 +134,129 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <AdminPrivate>
-              <UserManagement />
-            </AdminPrivate>
+            <UserOnly>
+              <AdminPrivate>
+                <UserManagement />
+              </AdminPrivate>
+            </UserOnly>
           }
         />
         <Route
           path="/notification"
           element={
-            <AdminPrivate>
-              <Notifications />
-            </AdminPrivate>
+            <UserOnly>
+              <AdminPrivate>
+                <Notifications />
+              </AdminPrivate>
+            </UserOnly>
           }
         />
         <Route
           path="/user-notification"
           element={
-            <PrivateRoute>
-              <UserNotifications />
-            </PrivateRoute>
+            <UserOnly>
+              <PrivateRoute>
+                <UserNotifications />
+              </PrivateRoute>
+            </UserOnly>
           }
         />
         <Route
           path="/chat"
           element={
-            <PrivateRoute>
-              <UserChatPage />
-            </PrivateRoute>
+            <UserOnly>
+              <PrivateRoute>
+                <UserChatPage />
+              </PrivateRoute>
+            </UserOnly>
           }
         />
         <Route
           path="/chat/:id"
           element={
-            <PrivateRoute>
-              <UserChatPage />
-            </PrivateRoute>
+            <UserOnly>
+              <PrivateRoute>
+                <UserChatPage />
+              </PrivateRoute>
+            </UserOnly>
           }
         />
         <Route
           path="/supportchat"
           element={
-            <AdminPrivate>
-              <SupportChat />
-            </AdminPrivate>
+            <UserOnly>
+              <AdminPrivate>
+                <SupportChat />
+              </AdminPrivate>
+            </UserOnly>
           }
         />
         <Route
           path="/supportchat/:id"
           element={
-            <AdminPrivate>
-              <SupportChat />
-            </AdminPrivate>
+            <UserOnly>
+              <AdminPrivate>
+                <SupportChat />
+              </AdminPrivate>
+            </UserOnly>
           }
         />
         <Route
           path="/mettings"
           element={
-            <AdminPrivate>
-              <MeetingDashboard />
-            </AdminPrivate>
+            <UserOnly>
+              <AdminPrivate>
+                <MeetingDashboard />
+              </AdminPrivate>
+            </UserOnly>
           }
         />
         <Route
           path="/user-mettings"
           element={
-            <PrivateRoute>
-              <UserMettings />
-            </PrivateRoute>
+            <UserOnly>
+              <PrivateRoute>
+                <UserMettings />
+              </PrivateRoute>
+            </UserOnly>
           }
         />
-        <Route path="/profile" element={<Profile />} />
+        <Route
+          path="/profile"
+          element={
+            <UserOnly>
+              <Profile />
+            </UserOnly>
+          }
+        />
         <Route
           path="/user-profile"
           element={
-            <PrivateRoute>
-              <UserProfile />
-            </PrivateRoute>
+            <UserOnly>
+              <PrivateRoute>
+                <UserProfile />
+              </PrivateRoute>
+            </UserOnly>
           }
         />
         <Route
           path="/edit-profile"
           element={
-            <AdminPrivate>
-              <EditProfileForm />
-            </AdminPrivate>
+            <UserOnly>
+              <AdminPrivate>
+                <EditProfileForm />
+              </AdminPrivate>
+            </UserOnly>
           }
         />
         <Route
           path="/user-edit-profile"
           element={
-            <PrivateRoute>
-              <UserEditProfile />
-            </PrivateRoute>
+            <UserOnly>
+              <PrivateRoute>
+                <UserEditProfile />
+              </PrivateRoute>
+            </UserOnly>
           }
         />
         <Route path="/membership" element={<PricingTable />} />

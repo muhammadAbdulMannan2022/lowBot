@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
-export default function UserPrivate({ children }) {
+export default function UserOnly({ children }) {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
 
@@ -11,13 +11,14 @@ export default function UserPrivate({ children }) {
     const token = localStorage.getItem("token");
 
     if (accessToken || refreshToken || token) {
-      navigate("/chat");
+      // User is authenticated — show content
+      setChecking(false);
     } else {
-      setChecking(false); // allow rendering of children
+      // Not authenticated — redirect away
+      navigate("/"); // or "/"
     }
   }, [navigate]);
 
-  if (checking) return null; // or a loader
-
+  if (checking) return null;
   return <>{children}</>;
 }
