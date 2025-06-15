@@ -719,6 +719,7 @@ import VoiceToVoiceChat from "../../component/user/VtoV";
 import SummaryModal from "./Summary";
 import AiModal from "./AiModal";
 import { MdKeyboardDoubleArrowLeft } from "react-icons/md";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function ChatInterface() {
   const [activeTab, setActiveTab] = useState("solved");
@@ -993,13 +994,30 @@ export default function ChatInterface() {
         });
       }
       console.log(mentor, mentor?.mentor_id);
-      if (typeof mentor?.mentor_id != "string") {
-        await axiosInstance.post(`/chats/${chatId || newChatId}/history/`, {
-          message: message,
-          sender_type: "user",
-        });
-        // await fetchChatHistory(chatId);
-        await fetchChatHistory(chatId || newChatId);
+      if (typeof mentor?.mentor_id !== "string") {
+        try {
+          const postResponse = await axiosInstance.post(
+            `/chats/${chatId || newChatId}/history/`,
+            {
+              message: message,
+              sender_type: "user",
+            }
+          );
+
+          if (
+            postResponse?.data?.message ===
+            "Your message limit has been reached."
+          ) {
+            toast("Your message limit has been reached.");
+            // alert("Your message limit has been reached.");
+            return; // Stop execution if limit is hit
+          }
+
+          await fetchChatHistory(chatId || newChatId);
+        } catch (error) {
+          console.error("Error posting message:", error);
+          alert("Something went wrong. Please try again.");
+        }
       }
 
       setMessage("");
@@ -1111,6 +1129,7 @@ export default function ChatInterface() {
       >
         <img src={ChatSideBaIcon} alt="" className="h-10 w-10" />
       </Button> */}
+      <ToastContainer />
       <Navbar />
       <div className="flex flex-1 absolute bottom-0 w-screen">
         <Sidebar />
@@ -1328,7 +1347,13 @@ export default function ChatInterface() {
                                         Summary
                                       </span>
                                     </div>
-                                    <div className="bg-blue-100 dark:bg-blue-900 shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2">
+                                    <div
+                                      onClick={() => {
+                                        setIsSummaryOpen(true);
+                                        setSummaryChatId(chat.chat_id);
+                                      }}
+                                      className="bg-blue-100 dark:bg-blue-900 shadow-md w-[50%] p-1 rounded-md flex items-center px-4 py-2"
+                                    >
                                       <Video className="w-4 h-4 mr-1 text-gray-700 dark:text-white" />
                                       <span className="text-xs text-gray-800 dark:text-gray-200">
                                         Watch video
@@ -1511,7 +1536,8 @@ export default function ChatInterface() {
                         <MettingOptions
                           fetchChatData={fetchChatHistory}
                           chatId={chatId}
-                          setTimeMettingShow={setTimeMettingShow}
+                          setTimeMeetingShow={setTimeMettingShow}
+                          timeMettingShow={timeMettingShow}
                           mentorId={
                             mentorsId.find(
                               (mentor) => mentor.chat_id === chatId
@@ -1520,6 +1546,7 @@ export default function ChatInterface() {
                         />
                       </div>
                     )}
+                    {/* {console.log(timeMettingShow)} */}
                     {messages[0].chat?.meetings.length === 1 && (
                       <div className="flex flex-col gap-4 bg-[#EAF3FB] dark:bg-gray-800 py-2 px-2 rounded-md">
                         {console.log(
@@ -1580,7 +1607,7 @@ export default function ChatInterface() {
                   </button>
                 </div>
               )}
-              <label className="cursor-pointer">
+              {/* <label className="cursor-pointer">
                 <Paperclip
                   size={23}
                   className="text-gray-500 dark:text-gray-300"
@@ -1591,7 +1618,7 @@ export default function ChatInterface() {
                   onChange={handleFileChange}
                   className="hidden"
                 />
-              </label>
+              </label> */}
               <label
                 className={`${
                   chatId

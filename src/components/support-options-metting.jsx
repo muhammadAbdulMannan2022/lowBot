@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../component/axiosInstance";
 
-export default function MettingOptions({
+export default function MeetingOptions({
   fetchChatData,
   chatId,
-  setTimeMettingShow,
-  mentorId,
+  setTimeMeetingShow,
+  timeMettingShow,
 }) {
   const [availableTimes, setAvailableTimes] = useState([]);
-  const [date, setDate] = useState("");
+  const [mentorId, setMentorId] = useState("");
 
   // Helper to format time as "hh:mm AM/PM"
   function formatTime(timeStr) {
@@ -22,34 +22,48 @@ export default function MettingOptions({
     });
   }
 
+  // Helper to format date as "Month Day, Year"
+  function formatDate(dateStr) {
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleDateString([], {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+
   useEffect(() => {
     const fetchTimes = async () => {
-      if (!mentorId) return;
       try {
-        const res = await axiosInstance.post("/zoom/times/", {
-          mentor_id: mentorId,
-        });
-        setAvailableTimes(res.data.available_times.slice(0, 3) || []);
-        setDate(res.data.date || "");
+        // Adjust the endpoint to include mentorId if required by the backend
+        const res = await axiosInstance.get(`/zoom/times/`);
+        setAvailableTimes(res.data.mentor.available_slots.slice(0, 3) || []);
+        setMentorId(res.data.mentor.mentor_id);
       } catch (error) {
         console.error("Error fetching available times:", error);
+        setAvailableTimes([]);
       }
     };
     fetchTimes();
-  }, [mentorId]);
+    console.log(timeMettingShow);
+  }, []);
 
-  const handleOptionClick = async (start_time) => {
-    if (!start_time) return;
+  const handleOptionClick = async (slot) => {
+    if (!slot.start_time || !slot.date) return;
     try {
       await axiosInstance.post(`/zoom/meetings/`, {
         chat: chatId,
-        date: date,
-        meeting_time: start_time,
+        date: slot.date,
+        meeting_time: slot.start_time,
         duration: "30",
-        users: [mentorId], // Add user id if needed
+        users: [Number(mentorId)],
       });
       fetchChatData(chatId);
-      setTimeMettingShow(false);
+      setTimeMeetingShow(false);
+      console.log(
+        "time ...........................................................................",
+        timeMettingShow
+      );
     } catch (error) {
       console.error("Error scheduling meeting:", error);
     }
@@ -69,14 +83,15 @@ export default function MettingOptions({
             No available times found.
           </div>
         )}
-        {availableTimes.map((time, idx) => (
+        {availableTimes.map((slot, idx) => (
           <button
             key={idx}
-            onClick={() => handleOptionClick(time.start_time)}
+            onClick={() => handleOptionClick(slot)}
             className="w-full py-4 px-6 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200"
           >
-            <span className="font-medium">{idx + 1}.</span> {date} at{" "}
-            {formatTime(time.start_time)} - {formatTime(time.end_time)}
+            <span className="font-medium">{idx + 1}.</span>{" "}
+            {formatDate(slot.date)} at {formatTime(slot.start_time)} -{" "}
+            {formatTime(slot.end_time)}
           </button>
         ))}
       </div>

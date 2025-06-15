@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiX, FiSend, FiPaperclip } from "react-icons/fi";
 import axiosInstance from "../../component/axiosInstance";
+import { toast, ToastContainer } from "react-toastify";
 
 const SUPPORTED_FILE_TYPES = [
   "image/*",
@@ -65,26 +66,36 @@ const AiModal = ({ isOpen, onClose, mainChatId }) => {
     setAttachedFile(null);
     setAttachedPreview(null);
   };
-
   const handleSend = async () => {
     if (!message.trim() && !attachedFile) return;
     const formData = new FormData();
     formData.append("message", message);
     formData.append("sender_type", "user");
     if (attachedFile) {
-      formData.append("attachment", attachedFile); // backend should expect 'attachment'
+      formData.append("attachment", attachedFile);
       formData.append("attachment_name", attachedFile.name);
     }
     try {
-      await axiosInstance.post(`/chats/${mainChatId}/history/`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const postResponse = await axiosInstance.post(
+        `/chats/${mainChatId}/history/`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      if (
+        postResponse?.data?.message === "Your message limit has been reached."
+      ) {
+        toast("Your message limit has been reached.");
+        return; // Stop execution if limit is hit
+      }
       setMessage("");
       setAttachedFile(null);
       setAttachedPreview(null);
       fetchHistory(); // Refresh messages after sending
     } catch (err) {
       console.error("Error sending message:", err);
+      alert("Something went wrong. Please try again.");
     } finally {
       handleRemoveFile();
     }
@@ -96,6 +107,7 @@ const AiModal = ({ isOpen, onClose, mainChatId }) => {
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 ">
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg h-[80vh] w-[90vw] md:w-[60vw] flex flex-col relative">
         {/* Header */}
+        <ToastContainer />
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-600 hover:text-gray-800"

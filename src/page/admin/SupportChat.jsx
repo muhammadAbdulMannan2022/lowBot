@@ -607,7 +607,7 @@ export default function SupportChat() {
                         </button>
                       </div>
                     )}
-                    <label className="cursor-pointer">
+                    {/* <label className="cursor-pointer">
                       <Paperclip size={20} className="text-gray-500" />
                       <input
                         type="file"
@@ -615,7 +615,7 @@ export default function SupportChat() {
                         onChange={handleFileChange}
                         className="hidden"
                       />
-                    </label>
+                    </label> */}
                     <div className="bg-white dark:bg-gray-800 w-full rounded-3xl px-4 flex items-center justify-between">
                       <input
                         placeholder="Start chat"
