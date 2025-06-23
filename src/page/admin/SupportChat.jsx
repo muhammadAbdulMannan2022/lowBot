@@ -47,7 +47,7 @@ export default function SupportChat() {
       if (!token || !chatId) return;
 
       chatWs.current = new WebSocket(
-        `wss://devidcyrus.duckdns.org/ws/api/v1/chat/?Authorization=Bearer ${token}`
+        `wss://leapapp-d8gtazf2e9aygcc6.canadacentral-01.azurewebsites.net/ws/api/v1/chat/?Authorization=Bearer ${token}`
       );
 
       chatWs.current.onopen = () => {
@@ -425,7 +425,7 @@ export default function SupportChat() {
                         ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
                       )}
                       <img
-                        src={`https://devidcyrus.duckdns.org${
+                        src={`https://leapapp-d8gtazf2e9aygcc6.canadacentral-01.azurewebsites.net${
                           chat?.user?.user_profile?.profile_picture ||
                           chat.image
                         }`}
@@ -449,7 +449,7 @@ export default function SupportChat() {
                       <div className="flex items-center gap-3">
                         <Avatar>
                           <img
-                            src={`https://devidcyrus.duckdns.org${
+                            src={`https://leapapp-d8gtazf2e9aygcc6.canadacentral-01.azurewebsites.net${
                               selectedChat?.user?.user_profile
                                 ?.profile_picture || selectedChat.image
                             }`}
@@ -544,7 +544,7 @@ export default function SupportChat() {
                             msg.sender_type !== "bot" && (
                               <Avatar className="mr-2 flex-shrink-0">
                                 <img
-                                  src={`https://devidcyrus.duckdns.org${
+                                  src={`https://leapapp-d8gtazf2e9aygcc6.canadacentral-01.azurewebsites.net${
                                     selectedChat?.user?.user_profile
                                       ?.profile_picture || selectedChat.image
                                   }`}

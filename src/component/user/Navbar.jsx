@@ -52,7 +52,7 @@ function Navbar() {
   useEffect(() => {
     // WebSocket for notifications
     notifyWs.current = new WebSocket(
-      `wss://devidcyrus.duckdns.org/ws/api/v1/notification/?Authorization=Bearer ${token}`
+      `wss://leapapp-d8gtazf2e9aygcc6.canadacentral-01.azurewebsites.net/ws/api/v1/notification/?Authorization=Bearer ${token}`
     );
 
     notifyWs.current.onopen = () => {
@@ -122,7 +122,7 @@ function Navbar() {
             <img
               src={
                 profile?.profile_picture
-                  ? `https://devidcyrus.duckdns.org${profile.profile_picture}`
+                  ? `https://leapapp-d8gtazf2e9aygcc6.canadacentral-01.azurewebsites.net${profile.profile_picture}`
                   : undefined
               }
               alt="User"

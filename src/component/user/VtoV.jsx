@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Mic, Volume2 } from "lucide-react";
 
-const WS_URL = `wss://devidcyrus.duckdns.org/ws/api/v1/chat/ai_voice_chat/?Authorization=Bearer ${
+const WS_URL = `wss://leapapp-d8gtazf2e9aygcc6.canadacentral-01.azurewebsites.net/ws/api/v1/chat/ai_voice_chat/?Authorization=Bearer ${
   typeof window !== "undefined" ? localStorage.getItem("token") : ""
 }`;
 
@@ -83,48 +83,77 @@ export default function VoiceChatPage({ isVToVActive, setActive }) {
       setIsReady(true);
     };
 
-    ws.current.onmessage = (event) => {
+    ws.current.onmessage = async (event) => {
       const data = JSON.parse(event.data);
       if (data.message) {
         setHasStarted(true);
 
-        const utterance = new window.SpeechSynthesisUtterance(data.message);
-        utterance.lang = "en-US";
-        utterance.rate = 1.1;
-        utterance.pitch = 1.0;
-        utterance.volume = 0.9;
-
-        utterance.onstart = () => {
-          speakingRef.current = true;
-          setSpeaking(true);
-        };
-        utterance.onend = () => {
-          speakingRef.current = false;
-          setSpeaking(false);
-          setTimeout(() => {
-            if (isVToVActive) {
-              startVoiceRecognition();
-            }
-          }, 200);
-        };
-        utterance.onerror = (err) => {
-          console.warn("Speech synthesis error:", err);
-          speakingRef.current = false;
-          setSpeaking(false);
-          setTimeout(() => {
-            if (isVToVActive) {
-              startVoiceRecognition();
-            }
-          }, 300);
-        };
-
+        // Stop any listening before playing
         if (recognitionRef.current) {
           recognitionRef.current.abort();
         }
         setListening(false);
 
-        if (isVToVActive) {
-          window.speechSynthesis.speak(utterance);
+        // Stop any previously playing audio
+        if (speakingRef.current) {
+          window.speechSynthesis.cancel();
+        }
+        speakingRef.current = true;
+        setSpeaking(true);
+
+        try {
+          // Fetch the audio from your local backend
+          const response = await fetch(
+            "https://leapapp-d8gtazf2e9aygcc6.canadacentral-01.azurewebsites.net/api/voice_chat",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+              body: JSON.stringify({ query: data.message }),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`Error from TTS server: ${response.statusText}`);
+          }
+
+          const audioBlob = await response.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
+          console.log(audio, "audio is here");
+
+          // When the audio plays, update UI
+          audio.onplay = () => {
+            speakingRef.current = true;
+            setSpeaking(true);
+          };
+          audio.onended = () => {
+            speakingRef.current = false;
+            setSpeaking(false);
+            if (isVToVActive) {
+              setTimeout(() => {
+                startVoiceRecognition();
+              }, 200);
+            }
+          };
+          audio.onerror = (error) => {
+            console.error("Error playing audio:", error);
+            speakingRef.current = false;
+            setSpeaking(false);
+            if (isVToVActive) {
+              setTimeout(() => {
+                startVoiceRecognition();
+              }, 300);
+            }
+          };
+          // Play the audio
+          await audio.play();
+        } catch (err) {
+          console.error("Error fetching audio:", err);
+          speakingRef.current = false;
+          setSpeaking(false);
         }
       }
     };

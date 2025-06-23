@@ -103,7 +103,7 @@ const SummaryModal = ({ isOpen, onClose, meetingId }) => {
               src={
                 current.meeting_video.startsWith("http")
                   ? current.meeting_video
-                  : `https://devidcyrus.duckdns.org${current.meeting_video}`
+                  : `https://leapapp-d8gtazf2e9aygcc6.canadacentral-01.azurewebsites.net${current.meeting_video}`
               }
               controls
               className="w-full max-h-[400px] rounded-lg bg-black"

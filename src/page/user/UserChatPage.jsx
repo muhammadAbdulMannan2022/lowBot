@@ -758,7 +758,7 @@ export default function ChatInterface() {
   useEffect(() => {
     console.log(token);
     chatWs.current = new WebSocket(
-      `wss://devidcyrus.duckdns.org/ws/api/v1/chat/?Authorization=Bearer ${token}`
+      `wss://leapapp-d8gtazf2e9aygcc6.canadacentral-01.azurewebsites.net/ws/api/v1/chat/?Authorization=Bearer ${token}`
     );
     chatWs.current.onopen = () => {
       console.log("chat WebSocket connected user chat page");
@@ -797,7 +797,7 @@ export default function ChatInterface() {
     chatWs.current.onclose = () => {
       console.log("chat WebSocket closed");
       chatWs.current = new WebSocket(
-        `wss://devidcyrus.duckdns.org/ws/api/v1/chat/?Authorization=Bearer ${token}`
+        `wss://leapapp-d8gtazf2e9aygcc6.canadacentral-01.azurewebsites.net/ws/api/v1/chat/?Authorization=Bearer ${token}`
       );
       chatWs.current.onopen = () => {
         console.log("chat WebSocket connected user chat page");
